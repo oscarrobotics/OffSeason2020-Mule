@@ -23,3 +23,5 @@ pluginManagement {
         }
     }
 }
+
+rootProject.name='OffSeason2020-Mule'

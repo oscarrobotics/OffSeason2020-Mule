@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/OffSeason2020-Mule.iml" filepath="$PROJECT_DIR$/.idea/OffSeason2020-Mule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OffSeason2020-Mule.main.iml" filepath="$PROJECT_DIR$/.idea/modules/OffSeason2020-Mule.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OffSeason2020-Mule.test.iml" filepath="$PROJECT_DIR$/.idea/modules/OffSeason2020-Mule.test.iml" />
     </modules>
   </component>
 </project>
