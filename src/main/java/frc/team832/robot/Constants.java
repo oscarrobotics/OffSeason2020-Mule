@@ -1,7 +1,7 @@
-package frc.robot;
+package frc.team832.robot;
 
 public class Constants {
-    public final double[] PIDF = {0, 0, 0, 0};
+    public final double AUTODRIVE_KP = 0.0;
     public final double WHEEL_DIAMETER = .15113; //meters (5.95in)
 
     public static final int leftMasterCANId = 1;
