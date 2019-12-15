@@ -1,24 +1,22 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Spark;
-import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.team832.lib.motorcontrol.vendor.CANSparkMax;
 
-public class Drivetrain extends Subsystem {
+import static com.revrobotics.CANSparkMaxLowLevel.*;
 
-    private SparkM leftMaster, leftSlave, rightMaster, rightSlave;
+public class Drivetrain extends SubsystemBase {
+    private CANSparkMax leftMaster, leftSlave, rightMaster, rightSlave;
 
+    public Drivetrain() {
 
-   public void initialize() {
-      leftMaster = new Spark(Constants.leftMasterCANId);
-      leftSlave = new Spark(Constants.leftSlaveCANId);
-      rightMaster = new Spark(Constants.rightMasterCANId);
-      rightSlave = new Spark(Constants.rightSlaveCANId);
+    }
 
+    public void initialize() {
+        leftMaster = new CANSparkMax(Constants.leftMasterCANId, MotorType.kBrushless);
+        leftSlave = new CANSparkMax(Constants.leftSlaveCANId, MotorType.kBrushless);
+        rightMaster = new CANSparkMax(Constants.rightMasterCANId, MotorType.kBrushless);
+        rightSlave = new CANSparkMax(Constants.rightSlaveCANId, MotorType.kBrushless);
    }
-
-
-    @Override
-    protected void initDefaultCommand() {}
-
 }
