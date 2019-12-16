@@ -10,6 +10,7 @@ import frc.team832.robot.Robot;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public class DrivetrainSubsystem extends SubsystemBase {
     private final CANSparkMax leftMaster, leftSlave, rightMaster, rightSlave;
 
@@ -43,6 +44,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
 
     public void drive() {
-        diffDrive.tankDrive(Robot.oi.leftStick.getY(), Robot.oi.rightStick.getY(), SmartDifferentialDrive.LoopMode.PERCENTAGE);
+        var axes = Robot.oi.driverOI.getTankDriveAxes();
+        diffDrive.tankDrive(axes.getLeft(), axes.getRight(), SmartDifferentialDrive.LoopMode.PERCENTAGE);
     }
 }
