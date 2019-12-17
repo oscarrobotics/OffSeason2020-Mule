@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
-      <module name="OffSeason2020-Mule.main" target="11" />
-      <module name="OffSeason2020-Mule.test" target="11" />
-    </bytecodeTargetLevel>
-  </component>
-</project>
