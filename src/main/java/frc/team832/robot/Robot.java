@@ -7,6 +7,7 @@
 
 package frc.team832.robot;
 
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team832.lib.OscarTimedRobot;
 import frc.team832.robot.subsystems.DrivetrainSubsystem;
 
@@ -27,6 +28,7 @@ public class Robot extends OscarTimedRobot {
 
   @Override
   public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
   }
 
   @Override
