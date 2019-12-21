@@ -1,48 +1,59 @@
 package frc.team832.robot.subsystems;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.RunEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.team832.lib.drive.SmartDifferentialDrive;
 import frc.team832.lib.driverinput.oi.DriveAxesSupplier;
 import frc.team832.lib.driverinput.oi.SticksDriverOI;
 import frc.team832.lib.driverinput.oi.XboxDriverOI;
+import frc.team832.lib.driverstation.dashboard.DashboardManager;
+import frc.team832.lib.driverstation.dashboard.DashboardUpdatable;
 import frc.team832.lib.motorcontrol.NeutralMode;
 import frc.team832.lib.motorcontrol.vendor.CANSparkMax;
 import frc.team832.lib.motors.Motors;
 import frc.team832.lib.sensors.NavXMicro;
 import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
-import frc.team832.robot.Robot;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 import static frc.team832.robot.Robot.oi;
 
 @SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
-public class DrivetrainSubsystem extends SubsystemBase {
+public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdatable {
     private final CANSparkMax leftMaster, leftSlave, rightMaster, rightSlave;
 
-    public ChassisSpeeds chassisSpeeds = new ChassisSpeeds();
-    public DifferentialDriveWheelSpeeds wheelSpeeds = new DifferentialDriveWheelSpeeds();
+    private NetworkTableEntry dashboard_poseX, dashboard_poseY, dashboard_poseHeadingDegrees, dashboard_poseHeadingRadians, dahsboard_navXYaw,
+            dashboard_rightDistance, dashboard_leftDistance;
+
+    private NetworkTable falconTable = NetworkTableInstance.getDefault().getTable("Live_Dashboard");
+    private NetworkTableEntry falconPoseXEntry = falconTable.getEntry("robotX");
+    private NetworkTableEntry falconPoseYEntry = falconTable.getEntry("robotY");
+    private NetworkTableEntry falconPoseHeadingEntry = falconTable.getEntry("robotHeading");
+    private NetworkTableEntry falconIsPathingEntry = falconTable.getEntry("isFollowingPath");
+    private NetworkTableEntry falconPathXEntry = falconTable.getEntry("pathX");
+    private NetworkTableEntry falconPathYEntry = falconTable.getEntry("pathY");
+    private NetworkTableEntry falconPathHeadingEntry = falconTable.getEntry("pathHeading");
 
     private final SmartDifferentialDrive diffDrive;
+    public DifferentialDriveOdometry driveOdometry;
     public Pose2d pose = new Pose2d();
-//    public DifferentialDriveOdometry driveOdometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(Robot.drivetrain.navX.getYaw()) , Constants.startPose);
-
     public NavXMicro navX;
 
-    private boolean initPassed;
-
-    public double leftVelocity;
-    public double rightVelocity;
+    private boolean initPassed = true;
 
     public DrivetrainSubsystem() {
-        leftMaster = new CANSparkMax(Constants.leftMasterCANId, MotorType.kBrushless);
-        leftSlave = new CANSparkMax(Constants.leftSlaveCANId, MotorType.kBrushless);
-        rightMaster = new CANSparkMax(Constants.rightMasterCANId, MotorType.kBrushless);
-        rightSlave = new CANSparkMax(Constants.rightSlaveCANId, MotorType.kBrushless);
+        leftMaster = new CANSparkMax(Constants.kLeftMasterCANId, MotorType.kBrushless);
+        leftSlave = new CANSparkMax(Constants.kLeftSlaveCANId, MotorType.kBrushless);
+        rightMaster = new CANSparkMax(Constants.kRightMasterCANId, MotorType.kBrushless);
+        rightSlave = new CANSparkMax(Constants.kRightSlaveCANId, MotorType.kBrushless);
 
         resetMCSettings();
 
@@ -70,17 +81,28 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
         diffDrive = new SmartDifferentialDrive(leftMaster, rightMaster, Motors.NEO.freeSpeed - 1000);
 
-//        navX = new NavXMicro(NavXMicro.NavXPort.I2C_onboard);
-//        navX.zero();
+        navX = new NavXMicro(NavXMicro.NavXPort.I2C_onboard);
+        navX.init();
+        navX.zero();
+
+        driveOdometry = new DifferentialDriveOdometry(getDriveHeading() , Constants.kZeroZeroPose);
+
+        DashboardManager.addTab(this);
+        dashboard_poseX = DashboardManager.addTabItem(this, "Pose/X", 0.0);
+        dashboard_poseY = DashboardManager.addTabItem(this, "Pose/Y", 0.0);
+        dashboard_poseHeadingDegrees = DashboardManager.addTabItem(this, "Pose/HeadingDeg", 0.0);
+        dashboard_poseHeadingRadians = DashboardManager.addTabItem(this, "Pose/HeadingRad", 0.0);
+        dahsboard_navXYaw = DashboardManager.addTabItem(this, "NavX Yaw", 0.0);
+        dashboard_leftDistance = DashboardManager.addTabItem(this, "LeftDriveDistance", 0.0);
+        dashboard_rightDistance = DashboardManager.addTabItem(this, "RightDriveDistance", 0.0);
+
+        resetPose();
 
         setDefaultCommand(new RunEndCommand(this::drive, diffDrive::stopMotor, this));
     }
 
-    public void periodic(){
+    public void periodic() {
 
-//        Rotation2d gyroAngle = Rotation2d.fromDegrees(-navX.getYaw());
-
-//        pose = driveOdometry.update(gyroAngle, Constants.dtPowertrain.calculateWheelDistanceMeters(leftMaster.getSensorPosition()), Constants.dtPowertrain.calculateWheelDistanceMeters(rightMaster.getSensorPosition()));
     }
 
     public void resetMCSettings () {
@@ -108,6 +130,67 @@ public class DrivetrainSubsystem extends SubsystemBase {
         return initPassed;
     }
 
+    private void updatePose() {
+        pose = driveOdometry.update(getDriveHeading(), getLeftDistanceMeters(), getRightDistanceMeters());
+    }
+
+    public void updateDashboardPose() {
+
+        updatePose();
+
+        var translation = pose.getTranslation();
+        var poseX = translation.getX();
+        var poseY = translation.getY();
+        var heading = pose.getRotation();
+
+        falconPoseXEntry.setDouble(Units.metersToFeet(poseX));
+        falconPoseYEntry.setDouble(Units.metersToFeet(poseY));
+        falconPoseHeadingEntry.setDouble(heading.getRadians());
+
+        dashboard_poseX.setDouble(OscarMath.round(poseX, 3));
+        dashboard_poseY.setDouble(OscarMath.round(poseY, 3));
+
+        dashboard_poseHeadingDegrees.setDouble(OscarMath.round(heading.getDegrees(), 2));
+        dashboard_poseHeadingRadians.setDouble(OscarMath.round(heading.getRadians(), 3));
+    }
+
+    public Rotation2d getDriveHeading() {
+        return Rotation2d.fromDegrees(-navX.getYaw());
+    }
+
+    public double getRightDistanceMeters () {
+        return Constants.dtPowertrain.calculateWheelDistanceMeters(-rightMaster.getSensorPosition());
+    }
+
+    public double getLeftDistanceMeters () {
+        return Constants.dtPowertrain.calculateWheelDistanceMeters(leftMaster.getSensorPosition());
+    }
+
+    public double getRightVelocityMetersPerSec () {
+        return Constants.dtPowertrain.calculateMetersPerSec(rightMaster.getSensorVelocity());
+    }
+
+    public double getLeftVelocityMetersPerSec () {
+        return Constants.dtPowertrain.calculateMetersPerSec(leftMaster.getSensorVelocity());
+    }
+
+    public void resetPose() {
+        pose = Constants.kZeroZeroPose;
+        resetPose(pose);
+    }
+
+    public void resetPose(Pose2d pose) {
+        resetEncoders();
+        this.pose = pose;
+        navX.zero();
+        driveOdometry.resetPosition(this.pose, getDriveHeading());
+    }
+
+    public void resetEncoders() {
+        leftMaster.rezeroSensor();
+        rightMaster.rezeroSensor();
+    }
+
     public void drive() {
         double rightAxis = 0;
         double leftAxis = 0;
@@ -133,5 +216,39 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 diffDrive.tankDrive(leftAxis, rightAxis, SmartDifferentialDrive.LoopMode.PERCENTAGE);
             }
         }
+    }
+
+    @Override
+    public String getDashboardTabName () {
+        return "Drivetrain";
+    }
+
+    @Override
+    public void updateDashboardData () {
+        updateDashboardPose();
+        dashboard_leftDistance.setDouble(getLeftDistanceMeters());
+        dashboard_rightDistance.setDouble(getRightDistanceMeters());
+        dahsboard_navXYaw.setDouble(navX.getYaw());
+    }
+
+    public Pose2d getLatestPose () {
+        updatePose();
+        return pose;
+    }
+
+    public DifferentialDriveWheelSpeeds getWheelSpeeds () {
+        return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSec(), getRightVelocityMetersPerSec());
+    }
+
+    public void setWheelVolts (Double leftVolts, Double rightVolts) {
+        double leftBusVoltage = leftMaster.getInputVoltage();
+        double rightBusVoltage = rightMaster.getInputVoltage();
+
+        double leftOutput = Math.abs(leftVolts / leftBusVoltage) * Math.signum(leftVolts);
+        double rightOutput = Math.abs(rightVolts / rightBusVoltage) * Math.signum(rightVolts);
+
+        leftMaster.set(leftOutput);
+        rightMaster.set(-rightOutput);
+
     }
 }

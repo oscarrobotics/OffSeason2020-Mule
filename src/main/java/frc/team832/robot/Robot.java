@@ -9,13 +9,14 @@ package frc.team832.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team832.lib.OscarTimedRobot;
+import frc.team832.lib.driverstation.dashboard.DashboardManager;
 import frc.team832.robot.subsystems.DrivetrainSubsystem;
 
 public class Robot extends OscarTimedRobot {
 
+  public static final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
   public static final OI oi = new OI();
 
-  public static final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
 
   @Override
   public void robotInit() {
@@ -29,6 +30,7 @@ public class Robot extends OscarTimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    drivetrain.updateDashboardData();
   }
 
   @Override
