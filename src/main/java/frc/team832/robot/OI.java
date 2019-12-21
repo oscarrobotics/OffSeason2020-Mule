@@ -23,5 +23,6 @@ public class OI {
         // do commands here
         leftStick.two.whenPressed(Robot.drivetrain::resetPose, Robot.drivetrain);
         leftStick.three.whenPressed(new FollowPathCommand(Trajectories.test));
+        leftStick.eight.whenPressed(new FollowPathCommand(Trajectories.example));
     }
 }

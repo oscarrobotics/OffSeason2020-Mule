@@ -16,12 +16,14 @@ import frc.team832.lib.driverinput.oi.SticksDriverOI;
 import frc.team832.lib.driverinput.oi.XboxDriverOI;
 import frc.team832.lib.driverstation.dashboard.DashboardManager;
 import frc.team832.lib.driverstation.dashboard.DashboardUpdatable;
+import frc.team832.lib.driverstation.dashboard.DashboardWidget;
 import frc.team832.lib.motorcontrol.NeutralMode;
 import frc.team832.lib.motorcontrol.vendor.CANSparkMax;
 import frc.team832.lib.motors.Motors;
 import frc.team832.lib.sensors.NavXMicro;
 import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
+import frc.team832.robot.Robot;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 import static frc.team832.robot.Robot.oi;
@@ -29,6 +31,11 @@ import static frc.team832.robot.Robot.oi;
 @SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdatable {
     private final CANSparkMax leftMaster, leftSlave, rightMaster, rightSlave;
+
+    private final double stickDriveMultiplier = 1.0;
+    private final double stickRotateOnCenterMultiplier = 0.6;
+    private final double stickRotateMultiplier = 0.85;
+
 
     private NetworkTableEntry dashboard_poseX, dashboard_poseY, dashboard_poseHeadingDegrees, dashboard_poseHeadingRadians, dahsboard_navXYaw,
             dashboard_rightDistance, dashboard_leftDistance, dashboard_rightWheelSpeedMPS, dashboard_leftWheelSpeedMPS,
@@ -50,11 +57,13 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
     private boolean initPassed = true;
 
+    private Pose2d startingPose = Constants.Poses.kZeroZeroPose;
+
     public DrivetrainSubsystem() {
-        leftMaster = new CANSparkMax(Constants.kLeftMasterCANId, MotorType.kBrushless);
-        leftSlave = new CANSparkMax(Constants.kLeftSlaveCANId, MotorType.kBrushless);
-        rightMaster = new CANSparkMax(Constants.kRightMasterCANId, MotorType.kBrushless);
-        rightSlave = new CANSparkMax(Constants.kRightSlaveCANId, MotorType.kBrushless);
+        leftMaster = new CANSparkMax(Constants.Drivetrain.kLeftMasterCANId, MotorType.kBrushless);
+        leftSlave = new CANSparkMax(Constants.Drivetrain.kLeftSlaveCANId, MotorType.kBrushless);
+        rightMaster = new CANSparkMax(Constants.Drivetrain.kRightMasterCANId, MotorType.kBrushless);
+        rightSlave = new CANSparkMax(Constants.Drivetrain.kRightSlaveCANId, MotorType.kBrushless);
 
         resetMCSettings();
 
@@ -73,7 +82,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         leftSlave.follow(leftMaster);
         rightSlave.follow(rightMaster);
 
-        resetMCCurrentLimit();
+        setMCCurrentLimit(60);
 
         rightMaster.setInverted(true);
         rightSlave.setInverted(false);
@@ -86,8 +95,20 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         navX.init();
         navX.zero();
 
-        driveOdometry = new DifferentialDriveOdometry(getDriveHeading() , Constants.kZeroZeroPose);
+        driveOdometry = new DifferentialDriveOdometry(getDriveHeading(), startingPose);
 
+        resetPose();
+
+        initDashboard();
+
+        setDefaultCommand(new RunEndCommand(this::drive, diffDrive::stopMotor, this));
+    }
+
+    public void periodic() {
+        updatePose();
+    }
+
+    public void initDashboard() {
         DashboardManager.addTab(this);
         dashboard_poseX = DashboardManager.addTabItem(this, "Pose/X", 0.0);
         dashboard_poseY = DashboardManager.addTabItem(this, "Pose/Y", 0.0);
@@ -96,18 +117,26 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         dahsboard_navXYaw = DashboardManager.addTabItem(this, "NavX Yaw", 0.0);
         dashboard_leftDistance = DashboardManager.addTabItem(this, "LeftDriveDistance", 0.0);
         dashboard_rightDistance = DashboardManager.addTabItem(this, "RightDriveDistance", 0.0);
-        dashboard_leftOutputVolts = DashboardManager.addTabItem(this, "Left Volts", 0.0);
-        dashboard_rightOutputVolts = DashboardManager.addTabItem(this, "Right Volts", 0.0);
-        dashboard_leftWheelSpeedMPS = DashboardManager.addTabItem(this, "Left Wheel Speed", 0.0);
-        dashboard_rightWheelSpeedMPS = DashboardManager.addTabItem(this, "Right Wheel Speed", 0.0);
+        dashboard_leftOutputVolts = DashboardManager.addTabItem(this, "Left Volts", 0.0, DashboardWidget.Graph);
+        dashboard_rightOutputVolts = DashboardManager.addTabItem(this, "Right Volts", 0.0, DashboardWidget.Graph);
+        dashboard_leftWheelSpeedMPS = DashboardManager.addTabItem(this, "Left Wheel Speed", 0.0, DashboardWidget.Graph);
+        dashboard_rightWheelSpeedMPS = DashboardManager.addTabItem(this, "Right Wheel Speed", 0.0, DashboardWidget.Graph);
 
-        resetPose();
-
-        setDefaultCommand(new RunEndCommand(this::drive, diffDrive::stopMotor, this));
     }
 
-    public void periodic() {
+    @Override
+    public String getDashboardTabName () {
+        return "Drivetrain";
+    }
 
+    @Override
+    public void updateDashboardData () {
+        updateDashboardPose();
+        dashboard_leftDistance.setDouble(getLeftDistanceMeters());
+        dashboard_rightDistance.setDouble(getRightDistanceMeters());
+        dahsboard_navXYaw.setDouble(navX.getYaw());
+        dashboard_leftWheelSpeedMPS.setDouble(getLeftVelocityMetersPerSec());
+        dashboard_rightWheelSpeedMPS.setDouble(-getRightVelocityMetersPerSec());
     }
 
     public void resetMCSettings () {
@@ -140,9 +169,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     }
 
     public void updateDashboardPose() {
-
-        updatePose();
-
         var translation = pose.getTranslation();
         var poseX = translation.getX();
         var poseY = translation.getY();
@@ -157,6 +183,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
         dashboard_poseHeadingDegrees.setDouble(OscarMath.round(heading.getDegrees(), 2));
         dashboard_poseHeadingRadians.setDouble(OscarMath.round(heading.getRadians(), 3));
+
+        dashboard_rightOutputVolts.setDouble(latestRightWheelVolts);
+        dashboard_leftOutputVolts.setDouble(latestLeftWheelVolts);
     }
 
     public Rotation2d getDriveHeading() {
@@ -164,24 +193,28 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     }
 
     public double getRightDistanceMeters () {
-        return Constants.dtPowertrain.calculateWheelDistanceMeters(-rightMaster.getSensorPosition());
+        return Constants.Drivetrain.dtPowertrain.calculateWheelDistanceMeters(-rightMaster.getSensorPosition());
     }
 
     public double getLeftDistanceMeters () {
-        return Constants.dtPowertrain.calculateWheelDistanceMeters(leftMaster.getSensorPosition());
+        return Constants.Drivetrain.dtPowertrain.calculateWheelDistanceMeters(leftMaster.getSensorPosition());
     }
 
     public double getRightVelocityMetersPerSec () {
-        return Constants.dtPowertrain.calculateMetersPerSec(rightMaster.getSensorVelocity());
+        return Constants.Drivetrain.dtPowertrain.calculateMetersPerSec(rightMaster.getSensorVelocity());
     }
 
     public double getLeftVelocityMetersPerSec () {
-        return Constants.dtPowertrain.calculateMetersPerSec(leftMaster.getSensorVelocity());
+        return Constants.Drivetrain.dtPowertrain.calculateMetersPerSec(leftMaster.getSensorVelocity());
     }
 
     public void resetPose() {
-        pose = Constants.kZeroZeroPose;
-        resetPose(pose);
+        resetPose(startingPose);
+    }
+
+    public void resetPoseFromChooser() {
+        Pose2d startPose = Robot.startPoseChooser.getSelected().poseMeters;
+        resetPose(startPose);
     }
 
     public void resetPose(Pose2d pose) {
@@ -196,49 +229,55 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         rightMaster.rezeroSensor();
     }
 
-    public void drive() {
-        double rightAxis = 0;
-        double leftAxis = 0;
-        if (oi.driverOI instanceof XboxDriverOI) {
-            DriveAxesSupplier axes = oi.driverOI.getArcadeDriveAxes();
-            rightAxis = OscarMath.signumPow(-axes.getRight(), 3);
-            leftAxis = OscarMath.signumPow(axes.getLeft(), 3);
-            diffDrive.arcadeDrive(rightAxis, leftAxis, SmartDifferentialDrive.LoopMode.PERCENTAGE);
-        } else if (oi.driverOI instanceof SticksDriverOI) {
-            DriveAxesSupplier axes = oi.driverOI.getTankDriveAxes();
-            if (((SticksDriverOI) oi.driverOI).rightStick.two.get()) {
-                double rotation = OscarMath.signumPow(axes.getRotation(), 2);
+    public void stickDrive() {
+        double rightPower = 0;
+        double leftPower = 0;
+        DriveAxesSupplier axes = oi.driverOI.getTankDriveAxes();
+        double rightStick = axes.getRight();
+        double leftStick = axes.getLeft();
+        boolean isRotate = ((SticksDriverOI) oi.driverOI).rightStick.two.get();
+        boolean driveStraight = ((SticksDriverOI) oi.driverOI).leftStick.trigger.get() || ((SticksDriverOI) oi.driverOI).rightStick.trigger.get();
+
+        if (driveStraight) {
+            double power = (OscarMath.signumPow(rightStick * stickDriveMultiplier, 2) + OscarMath.signumPow(leftStick * stickDriveMultiplier, 2)) / 2;
+            if (isRotate) {
+                rightPower = power - OscarMath.signumPow(axes.getRotation() * stickRotateMultiplier, 2);
+                leftPower = power + OscarMath.signumPow(axes.getRotation() * stickRotateMultiplier, 2);
+            } else {
+                rightPower = power;
+                leftPower = power;
+            }
+            diffDrive.tankDrive(leftPower, rightPower, SmartDifferentialDrive.LoopMode.PERCENTAGE);
+        } else {
+            if (isRotate) {
+                double rotation = OscarMath.signumPow(axes.getRotation() * stickRotateOnCenterMultiplier, 3);
                 diffDrive.arcadeDrive(rotation, 0.0, SmartDifferentialDrive.LoopMode.PERCENTAGE);
             } else {
-                if (((SticksDriverOI) oi.driverOI).leftStick.trigger.get() || ((SticksDriverOI) oi.driverOI).rightStick.trigger.get()) {
-                    double power = (OscarMath.signumPow(axes.getRight(), 2) + OscarMath.signumPow(axes.getLeft(), 2)) / 2;
-                    rightAxis = power;
-                    leftAxis = power;
-                } else {
-                    rightAxis = OscarMath.signumPow(axes.getRight(), 3);
-                    leftAxis = OscarMath.signumPow(axes.getLeft(), 3);
-                }
-                diffDrive.tankDrive(leftAxis, rightAxis, SmartDifferentialDrive.LoopMode.PERCENTAGE);
+                rightPower = OscarMath.signumPow(rightStick * stickDriveMultiplier, 2);
+                leftPower = OscarMath.signumPow(leftStick * stickDriveMultiplier, 2);
+                diffDrive.tankDrive(leftPower, rightPower, SmartDifferentialDrive.LoopMode.PERCENTAGE);
             }
         }
     }
 
-    @Override
-    public String getDashboardTabName () {
-        return "Drivetrain";
+    public void xBoxDrive() {
+        double rightPower = 0;
+        double leftPower = 0;
+        DriveAxesSupplier axes = oi.driverOI.getArcadeDriveAxes();
+        rightPower = OscarMath.signumPow(-axes.getRight() * stickDriveMultiplier, 3);
+        leftPower = OscarMath.signumPow(axes.getLeft() * stickDriveMultiplier, 3);
+        diffDrive.arcadeDrive(rightPower, leftPower, SmartDifferentialDrive.LoopMode.PERCENTAGE);
     }
 
-    @Override
-    public void updateDashboardData () {
-        updateDashboardPose();
-        dashboard_leftDistance.setDouble(getLeftDistanceMeters());
-        dashboard_rightDistance.setDouble(getRightDistanceMeters());
-        dahsboard_navXYaw.setDouble(navX.getYaw());
-        dashboard_leftWheelSpeedMPS.setDouble(getLeftVelocityMetersPerSec());
-        dashboard_rightWheelSpeedMPS.setDouble(getRightVelocityMetersPerSec());
+    public void drive() {
+        if (oi.driverOI instanceof XboxDriverOI) {
+           xBoxDrive();
+        } else if (oi.driverOI instanceof SticksDriverOI) {
+            stickDrive();
+        }
     }
 
-    public Pose2d getLatestPose () {
+    public Pose2d getLatestPose() {
         updatePose();
         return pose;
     }
@@ -247,18 +286,16 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         return new DifferentialDriveWheelSpeeds(getLeftVelocityMetersPerSec(), getRightVelocityMetersPerSec());
     }
 
-    public void setWheelVolts (Double leftVolts, Double rightVolts) {
+    private double latestLeftWheelVolts, latestRightWheelVolts;
+
+    public void setWheelVolts(Double leftVolts, Double rightVolts) {
         double leftBusVoltage = leftMaster.getInputVoltage();
         double rightBusVoltage = rightMaster.getInputVoltage();
 
-        double leftOutput = Math.abs(leftVolts / leftBusVoltage) * Math.signum(leftVolts);
-        double rightOutput = Math.abs(rightVolts / rightBusVoltage) * Math.signum(rightVolts);
+        latestLeftWheelVolts = Math.abs(leftVolts / leftBusVoltage) * Math.signum(leftVolts);
+        latestRightWheelVolts = -Math.abs(rightVolts / rightBusVoltage) * Math.signum(rightVolts);
 
-        dashboard_rightOutputVolts.setDouble(rightOutput);
-        dashboard_leftOutputVolts.setDouble(leftOutput);
-
-        leftMaster.set(leftOutput);
-        rightMaster.set(-rightOutput);
-
+        leftMaster.set(latestLeftWheelVolts);
+        rightMaster.set(latestRightWheelVolts);
     }
 }

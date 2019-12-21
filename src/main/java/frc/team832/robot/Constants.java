@@ -14,40 +14,55 @@ import frc.team832.lib.motors.Gearbox;
 import frc.team832.lib.motors.Motors;
 
 public class Constants {
-    public static final double AUTODRIVE_KP = 0.0;
-    public static final double kDriveWheelDiameter = Units.inchesToMeters(6);
 
-    public static final float kDriveGearReduction = 1f / (9f/84f);
+	public static class Poses {
+		public static final Pose2d kZeroZeroPose = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
+		public static final Pose2d kCenterHABStartPose = new Pose2d(1.7, 4.12, new Rotation2d());
+		public static final Pose2d kLeftHABStartPose = new Pose2d(1.7, 3.0, new Rotation2d());
+		public static final Pose2d kRightHABStartPose = PathHelper.mirrorPose2d(kLeftHABStartPose);
+	}
 
-    private static final Gearbox driveGearbox = new Gearbox(kDriveGearReduction);
-    public static final DTPowerTrain dtPowertrain = new DTPowerTrain(driveGearbox, Motors.NEO, 2, kDriveWheelDiameter);
-	public static DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24.0));
+	public static class Drivetrain {
+		public static final double kDriveWheelDiameter = Units.inchesToMeters(6);
 
-    public static final double kDrive_kS = 0.237;
-    public static final double kDrive_kV = 2.5;
-    public static final double kDrive_kA = 0.267;
+		public static final float kDriveGearReduction = 1f / (9f/84f);
 
-    public static final double kDriveLeft_kP = 0.955;
-    public static final double kDriveRight_kP = 0.888;
+		private static final Gearbox driveGearbox = new Gearbox(kDriveGearReduction);
+		public static final DTPowerTrain dtPowertrain = new DTPowerTrain(driveGearbox, Motors.NEO, 2, kDriveWheelDiameter);
+		public static DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24.0));
 
-    public static final SimpleMotorFeedforward kDriveFF = new SimpleMotorFeedforward(kDrive_kS, kDrive_kV, kDrive_kA);
+		private static final double kDrive_kS = 0.237;
+		private static final double kDrive_kV = 2.5;
+		private static final double kDrive_kA = 0.267;
 
-	public static final DifferentialDriveVoltageConstraint kAutoVoltageConstraint =
-			new DifferentialDriveVoltageConstraint(kDriveFF, kDriveKinematics, 10);
+		private static final SimpleMotorFeedforward kDriveFF = new SimpleMotorFeedforward(kDrive_kS, kDrive_kV, kDrive_kA);
 
-	public static final TrajectoryConfig kTrajectoryConfig =
-			new TrajectoryConfig(1, 1)
-					.setKinematics(kDriveKinematics)
-					.addConstraint(kAutoVoltageConstraint);
+		private static final double kLeftDrive_kS = 0.242;
+		private static final double kLeftDrive_kV = 2.5;
+		private static final double kLeftDrive_kA = 0.258;
 
+		public static final SimpleMotorFeedforward kLeftDriveFF = new SimpleMotorFeedforward(kLeftDrive_kS, kLeftDrive_kV, kLeftDrive_kA);
 
-    public static final Pose2d kZeroZeroPose = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
-	public static final Pose2d kCenterHABStartPose = new Pose2d(1.7, 4.12, new Rotation2d());
-	public static final Pose2d kLeftHABStartPose = new Pose2d(1.7, 3.0, new Rotation2d());
-	public static final Pose2d kRightHABStartPose = PathHelper.mirrorPose2d(kLeftHABStartPose);
+		private static final double kRightDrive_kS = 0.226;
+		private static final double kRightDrive_kV = 2.5;
+		private static final double kRightDrive_kA = 0.241;
 
-    public static final int kLeftMasterCANId = 20;
-    public static final int kLeftSlaveCANId = 21;
-    public static final int kRightMasterCANId = 22;
-    public static final int kRightSlaveCANId = 23;
+		public static final SimpleMotorFeedforward kRightDriveFF = new SimpleMotorFeedforward(kRightDrive_kS, kRightDrive_kV, kRightDrive_kA);
+
+		public static final double kDriveLeft_kP = 0.06; // 0.995
+		public static final double kDriveRight_kP = 0.05; // 0.888
+
+		public static final DifferentialDriveVoltageConstraint kAutoVoltageConstraint =
+				new DifferentialDriveVoltageConstraint(kDriveFF, kDriveKinematics, 10);
+
+		public static final TrajectoryConfig kTrajectoryConfig =
+				new TrajectoryConfig(3, 6)
+						.setKinematics(kDriveKinematics)
+						.addConstraint(kAutoVoltageConstraint);
+
+		public static final int kLeftMasterCANId = 20;
+		public static final int kLeftSlaveCANId = 21;
+		public static final int kRightMasterCANId = 22;
+		public static final int kRightSlaveCANId = 23;
+	}
 }
