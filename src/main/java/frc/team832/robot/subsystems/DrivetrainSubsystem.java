@@ -31,7 +31,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     private final CANSparkMax leftMaster, leftSlave, rightMaster, rightSlave;
 
     private NetworkTableEntry dashboard_poseX, dashboard_poseY, dashboard_poseHeadingDegrees, dashboard_poseHeadingRadians, dahsboard_navXYaw,
-            dashboard_rightDistance, dashboard_leftDistance;
+            dashboard_rightDistance, dashboard_leftDistance, dashboard_rightWheelSpeedMPS, dashboard_leftWheelSpeedMPS,
+            dashboard_rightOutputVolts, dashboard_leftOutputVolts;
 
     private NetworkTable falconTable = NetworkTableInstance.getDefault().getTable("Live_Dashboard");
     private NetworkTableEntry falconPoseXEntry = falconTable.getEntry("robotX");
@@ -95,6 +96,10 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         dahsboard_navXYaw = DashboardManager.addTabItem(this, "NavX Yaw", 0.0);
         dashboard_leftDistance = DashboardManager.addTabItem(this, "LeftDriveDistance", 0.0);
         dashboard_rightDistance = DashboardManager.addTabItem(this, "RightDriveDistance", 0.0);
+        dashboard_leftOutputVolts = DashboardManager.addTabItem(this, "Left Volts", 0.0);
+        dashboard_rightOutputVolts = DashboardManager.addTabItem(this, "Right Volts", 0.0);
+        dashboard_leftWheelSpeedMPS = DashboardManager.addTabItem(this, "Left Wheel Speed", 0.0);
+        dashboard_rightWheelSpeedMPS = DashboardManager.addTabItem(this, "Right Wheel Speed", 0.0);
 
         resetPose();
 
@@ -229,6 +234,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         dashboard_leftDistance.setDouble(getLeftDistanceMeters());
         dashboard_rightDistance.setDouble(getRightDistanceMeters());
         dahsboard_navXYaw.setDouble(navX.getYaw());
+        dashboard_leftWheelSpeedMPS.setDouble(getLeftVelocityMetersPerSec());
+        dashboard_rightWheelSpeedMPS.setDouble(getRightVelocityMetersPerSec());
     }
 
     public Pose2d getLatestPose () {
@@ -246,6 +253,9 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
         double leftOutput = Math.abs(leftVolts / leftBusVoltage) * Math.signum(leftVolts);
         double rightOutput = Math.abs(rightVolts / rightBusVoltage) * Math.signum(rightVolts);
+
+        dashboard_rightOutputVolts.setDouble(rightOutput);
+        dashboard_leftOutputVolts.setDouble(leftOutput);
 
         leftMaster.set(leftOutput);
         rightMaster.set(-rightOutput);
