@@ -1,7 +1,11 @@
 package frc.team832.robot.autonomous;
 
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.util.Units;
 import frc.team832.robot.Constants;
 
 public class SequenceOptions {
@@ -17,6 +21,59 @@ public class SequenceOptions {
         StartingPosition (Pose2d pose) {
             poseMeters = pose;
         }
+    }
+
+    public enum PrimaryDestination {
+        LEFT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3, 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
+        LEFT_ROCKET_FAR(new Pose2d(new Translation2d(5.45, 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_REAR_ANGLE)))),
+        RIGHT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3, 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
+        RIGHT_ROCKET_FAR(new Pose2d(new Translation2d(5.45, 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_REAR_ANGLE)))),
+        CARGO_FRONT_LEFT(new Pose2d(new Translation2d(5.45, 3.85), new Rotation2d(0))),
+        CARGO_FRONT_RIGHT(new Pose2d(new Translation2d(5.45, 4.45), new Rotation2d(0))),
+        CARGO_LEFTSIDE1(new Pose2d()),
+        CARGO_LEFTSIDE2(new Pose2d()),
+        CARGO_LEFTSIDE3(new Pose2d()),
+        CARGO_RIGHTSIDE1(new Pose2d()),
+        CARGO_RIGHTSIDE2(new Pose2d()),
+        CARGO_RIGHTSIDE3(new Pose2d());
+
+        public final Pose2d poseMeters;
+
+        PrimaryDestination(Pose2d pose) {
+            poseMeters = pose;
+        }
+    }
+
+    public enum SecondaryDestination {
+        DO_NOTHING(new Pose2d()),
+        RIGHT_CARGO_PIT(new Pose2d(new Translation2d(1.125, 6.25), new Rotation2d(Units.degreesToRadians(180)))),
+        RIGHT_HP_HATCH(new Pose2d(new Translation2d(0.1, 7.55), new Rotation2d(Units.degreesToRadians(180)))),
+        LEFT_CARGO_PIT(new Pose2d(new Translation2d(1.2, 2.05), new Rotation2d(Units.degreesToRadians(180)))),
+        LEFT_HP_HATCH(new Pose2d(new Translation2d(0.1, 0.65), new Rotation2d(Units.degreesToRadians(180))));
+
+        public final Pose2d poseMeters;
+
+        SecondaryDestination(Pose2d pose) {
+            poseMeters = pose;
+        }
+    }
+
+    public enum TertiaryDestination {
+        DO_NOTHING(new Pose2d()),
+        LEFT_ROCKET_FAR(new Pose2d()),
+        LEFT_ROCKET_CLOSE(new Pose2d()),
+        RIGHT_ROCKET_FAR(new Pose2d()),
+        RIGHT_ROCKET_CLOSE(new Pose2d()),
+        CARGO_SIDE1(new Pose2d()),
+        CARGO_SIDE2(new Pose2d()),
+        CARGO_SIDE3(new Pose2d());
+
+        public final Pose2d poseMeters;
+
+        TertiaryDestination(Pose2d pose) {
+            poseMeters = pose;
+        }
+
     }
 
     public enum AutoTask {
@@ -39,8 +96,10 @@ public class SequenceOptions {
             switch (startPos) {
                 case kHAB1Left:
                     switch (endPos) {
-                        case ROCKET_CLOSE:
-                        case ROCKET_FAR:
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
                         case CARGO_LEFTSIDE1:
                         case CARGO_LEFTSIDE2:
                         case CARGO_LEFTSIDE3:
@@ -56,8 +115,10 @@ public class SequenceOptions {
                     }
                 case kHAB1Right:
                     switch (endPos) {
-                        case ROCKET_CLOSE:
-                        case ROCKET_FAR:
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
                         case CARGO_RIGHTSIDE1:
                         case CARGO_RIGHTSIDE2:
                         case CARGO_RIGHTSIDE3:
@@ -66,25 +127,6 @@ public class SequenceOptions {
                     }
             }
             return null;
-        }
-    }
-
-    public enum PrimaryDestination {
-        ROCKET_CLOSE(new Pose2d()),
-        ROCKET_FAR(new Pose2d()),
-        CARGO_FRONT_LEFT(new Pose2d()),
-        CARGO_FRONT_RIGHT(new Pose2d()),
-        CARGO_LEFTSIDE1(new Pose2d()),
-        CARGO_LEFTSIDE2(new Pose2d()),
-        CARGO_LEFTSIDE3(new Pose2d()),
-        CARGO_RIGHTSIDE1(new Pose2d()),
-        CARGO_RIGHTSIDE2(new Pose2d()),
-        CARGO_RIGHTSIDE3(new Pose2d());
-
-        public final Pose2d poseMeters;
-
-        PrimaryDestination(Pose2d pose) {
-            poseMeters = pose;
         }
     }
 
@@ -98,100 +140,128 @@ public class SequenceOptions {
 
         Trajectory getPath(PrimaryDestination startPos) {
             switch (startPos) {
-                case ROCKET_CLOSE:
+                case LEFT_ROCKET_CLOSE:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
-                case ROCKET_FAR:
+                case LEFT_ROCKET_FAR:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
+                        case DO_NOTHING:
+                        default:
+                            return null;
+                    }
+                case RIGHT_ROCKET_CLOSE:
+                    switch (endPos) {
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
+                        case DO_NOTHING:
+                        default:
+                            return null;
+                    }
+                case RIGHT_ROCKET_FAR:
+                    switch (endPos) {
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_FRONT_LEFT:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_FRONT_RIGHT:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_LEFTSIDE1:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_LEFTSIDE2:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_LEFTSIDE3:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_RIGHTSIDE1:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_RIGHTSIDE2:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case CARGO_RIGHTSIDE3:
                     switch (endPos) {
-                        case HP_HATCH:
-                        case CARGO_PIT:
+                        case LEFT_HP_HATCH:
+                        case LEFT_CARGO_PIT:
+                        case RIGHT_HP_HATCH:
+                        case RIGHT_CARGO_PIT:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
             }
             return null;
-        }
-    }
-
-    public enum SecondaryDestination {
-        DO_NOTHING(new Pose2d()),
-        CARGO_PIT(new Pose2d()),
-        HP_HATCH(new Pose2d());
-
-        public final Pose2d poseMeters;
-
-        SecondaryDestination(Pose2d pose) {
-            poseMeters = pose;
         }
     }
 
@@ -205,10 +275,12 @@ public class SequenceOptions {
 
         Trajectory getPath(SecondaryDestination startPos) {
             switch (startPos) {
-                case HP_HATCH:
+                case LEFT_HP_HATCH:
                     switch (endPos) {
-                        case ROCKET_FAR:
-                        case ROCKET_CLOSE:
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
                         case CARGO_SIDE1:
                         case CARGO_SIDE2:
                         case CARGO_SIDE3:
@@ -216,10 +288,38 @@ public class SequenceOptions {
                         default:
                             return null;
                     }
-                case CARGO_PIT:
+                case LEFT_CARGO_PIT:
                     switch (endPos) {
-                        case ROCKET_FAR:
-                        case ROCKET_CLOSE:
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
+                        case CARGO_SIDE1:
+                        case CARGO_SIDE2:
+                        case CARGO_SIDE3:
+                        case DO_NOTHING:
+                        default:
+                            return null;
+                    }
+                case RIGHT_HP_HATCH:
+                    switch (endPos) {
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
+                        case CARGO_SIDE1:
+                        case CARGO_SIDE2:
+                        case CARGO_SIDE3:
+                        case DO_NOTHING:
+                        default:
+                            return null;
+                    }
+                case RIGHT_CARGO_PIT:
+                    switch (endPos) {
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
                         case CARGO_SIDE1:
                         case CARGO_SIDE2:
                         case CARGO_SIDE3:
@@ -229,8 +329,10 @@ public class SequenceOptions {
                     }
                 case DO_NOTHING:
                     switch (endPos) {
-                        case ROCKET_FAR:
-                        case ROCKET_CLOSE:
+                        case LEFT_ROCKET_CLOSE:
+                        case LEFT_ROCKET_FAR:
+                        case RIGHT_ROCKET_CLOSE:
+                        case RIGHT_ROCKET_FAR:
                         case CARGO_SIDE1:
                         case CARGO_SIDE2:
                         case CARGO_SIDE3:
@@ -242,22 +344,4 @@ public class SequenceOptions {
             return null;
         }
     }
-
-    public enum TertiaryDestination {
-        DO_NOTHING(new Pose2d()),
-        ROCKET_FAR(new Pose2d()),
-        ROCKET_CLOSE(new Pose2d()),
-        CARGO_SIDE1(new Pose2d()),
-        CARGO_SIDE2(new Pose2d()),
-        CARGO_SIDE3(new Pose2d());
-
-        public final Pose2d poseMeters;
-
-        TertiaryDestination(Pose2d pose) {
-            poseMeters = pose;
-        }
-
-    }
-
-
 }

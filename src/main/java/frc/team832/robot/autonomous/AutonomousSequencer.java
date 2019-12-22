@@ -88,6 +88,8 @@ public class AutonomousSequencer {
                     secondaryCommand,
                     new FollowPathCommand(TrajectoryGenerator.generateTrajectory(secondaryPath.endPos.poseMeters, List.of(), tertiaryPath.endPos.poseMeters, Constants.Drivetrain.kTrajectoryConfig)),
                     tertiaryCommand);
+        } else {
+
         }
         return null;
     }
