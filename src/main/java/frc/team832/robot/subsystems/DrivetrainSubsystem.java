@@ -24,6 +24,7 @@ import frc.team832.lib.sensors.NavXMicro;
 import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
 import frc.team832.robot.Robot;
+import frc.team832.robot.autonomous.SequenceOptions;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 import static frc.team832.robot.Robot.oi;
@@ -57,7 +58,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
     private boolean initPassed = true;
 
-    private Pose2d startingPose = Constants.Poses.kZeroZeroPose;
+    private Pose2d startingPose = SequenceOptions.StartingPosition.kHAB1Center.poseMeters;
 
     public DrivetrainSubsystem() {
         leftMaster = new CANSparkMax(Constants.Drivetrain.kLeftMasterCANId, MotorType.kBrushless);

@@ -1,10 +1,11 @@
-package frc.team832.robot;
+package frc.team832.robot.autonomous;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import frc.team832.robot.Constants;
 
 import java.util.List;
 

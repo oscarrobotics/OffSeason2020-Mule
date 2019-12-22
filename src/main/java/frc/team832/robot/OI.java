@@ -3,6 +3,7 @@ package frc.team832.robot;
 import frc.team832.lib.driverinput.controllers.Attack3;
 import frc.team832.lib.driverinput.controllers.Extreme3DPro;
 import frc.team832.lib.driverinput.oi.*;
+import frc.team832.robot.autonomous.Trajectories;
 import frc.team832.robot.commands.FollowPathCommand;
 
 @SuppressWarnings("WeakerAccess")

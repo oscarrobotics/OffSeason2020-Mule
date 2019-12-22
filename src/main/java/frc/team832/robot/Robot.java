@@ -8,12 +8,10 @@
 package frc.team832.robot;
 
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.team832.lib.OscarTimedRobot;
-import frc.team832.lib.driverstation.dashboard.DashboardManager;
+import frc.team832.robot.autonomous.StartingPosition;
 import frc.team832.robot.subsystems.DrivetrainSubsystem;
 
 public class Robot extends OscarTimedRobot {
