@@ -43,7 +43,6 @@ public class AutonomousSequencer {
 
     public SequentialCommandGroup composeCommandGroup() {
         if (!preGenerated) {
-            new TrajectoryGenerator();
             Command primaryCommand;
             Command secondaryCommand;
             Command tertiaryCommand;

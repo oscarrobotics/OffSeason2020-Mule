@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.RunEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,7 +38,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     private final double stickRotateOnCenterMultiplier = 0.6;
     private final double stickRotateMultiplier = 0.85;
 
-
     private NetworkTableEntry dashboard_poseX, dashboard_poseY, dashboard_poseHeadingDegrees, dashboard_poseHeadingRadians, dahsboard_navXYaw,
             dashboard_rightDistance, dashboard_leftDistance, dashboard_rightWheelSpeedMPS, dashboard_leftWheelSpeedMPS,
             dashboard_rightOutputVolts, dashboard_leftOutputVolts;
@@ -59,6 +59,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     private boolean initPassed = true;
 
     private Pose2d startingPose = SequenceOptions.StartingPosition.kHAB1Center.poseMeters;
+//    private SendableChooser<StartingPosition> startPoseChooser;
 
     public DrivetrainSubsystem() {
         leftMaster = new CANSparkMax(Constants.Drivetrain.kLeftMasterCANId, MotorType.kBrushless);
@@ -122,7 +123,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         dashboard_rightOutputVolts = DashboardManager.addTabItem(this, "Right Volts", 0.0, DashboardWidget.Graph);
         dashboard_leftWheelSpeedMPS = DashboardManager.addTabItem(this, "Left Wheel Speed", 0.0, DashboardWidget.Graph);
         dashboard_rightWheelSpeedMPS = DashboardManager.addTabItem(this, "Right Wheel Speed", 0.0, DashboardWidget.Graph);
-
+        // TODO: update for new auto selector enum
+//        startPoseChooser = DashboardManager.addTabChooser(this, "StartPos", StartingPosition.values(), StartingPosition.kZeroZero);
     }
 
     @Override
@@ -214,8 +216,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     }
 
     public void resetPoseFromChooser() {
-        Pose2d startPose = Robot.startPoseChooser.getSelected().poseMeters;
-        resetPose(startPose);
+//        Pose2d startPose = startPoseChooser.getSelected().poseMeters;
+//        resetPose(startPose);
     }
 
     public void resetPose(Pose2d pose) {
