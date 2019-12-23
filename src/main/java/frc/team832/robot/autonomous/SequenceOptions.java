@@ -1,11 +1,11 @@
 package frc.team832.robot.autonomous;
 
-import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.util.Units;
+import frc.team832.lib.motion.PathHelper;
 import frc.team832.robot.Constants;
 
 public class SequenceOptions {
@@ -24,12 +24,12 @@ public class SequenceOptions {
     }
 
     public enum PrimaryDestination {
-        LEFT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3, 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
-        LEFT_ROCKET_FAR(new Pose2d(new Translation2d(5.45, 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_REAR_ANGLE)))),
-        RIGHT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3, 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
-        RIGHT_ROCKET_FAR(new Pose2d(new Translation2d(5.45, 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_REAR_ANGLE)))),
-        CARGO_FRONT_LEFT(new Pose2d(new Translation2d(5.45, 3.85), new Rotation2d(0))),
-        CARGO_FRONT_RIGHT(new Pose2d(new Translation2d(5.45, 4.45), new Rotation2d(0))),
+        LEFT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3,8.2 - 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
+        LEFT_ROCKET_FAR(new Pose2d(new Translation2d(5.45,8.2 - 0.55), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_FAR_ANGLE)))),
+        RIGHT_ROCKET_CLOSE(new Pose2d(new Translation2d(5.3,8.2 - 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_CLOSE_ANGLE)))),
+        RIGHT_ROCKET_FAR(new Pose2d(new Translation2d(5.45, 8.2 - 7.65), new Rotation2d(Units.degreesToRadians(Path2019.LEFT_ROCKET_FAR_ANGLE)))),
+        CARGO_FRONT_LEFT(new Pose2d(new Translation2d(5.45, 8.2 - 3.85), new Rotation2d(0))),
+        CARGO_FRONT_RIGHT(new Pose2d(new Translation2d(5.45,8.2 -  4.45), new Rotation2d(0))),
         CARGO_LEFTSIDE1(new Pose2d()),
         CARGO_LEFTSIDE2(new Pose2d()),
         CARGO_LEFTSIDE3(new Pose2d()),
@@ -46,10 +46,10 @@ public class SequenceOptions {
 
     public enum SecondaryDestination {
         DO_NOTHING(new Pose2d()),
-        RIGHT_CARGO_PIT(new Pose2d(new Translation2d(1.125, 6.25), new Rotation2d(Units.degreesToRadians(180)))),
-        RIGHT_HP_HATCH(new Pose2d(new Translation2d(0.1, 7.55), new Rotation2d(Units.degreesToRadians(180)))),
-        LEFT_CARGO_PIT(new Pose2d(new Translation2d(1.2, 2.05), new Rotation2d(Units.degreesToRadians(180)))),
-        LEFT_HP_HATCH(new Pose2d(new Translation2d(0.1, 0.65), new Rotation2d(Units.degreesToRadians(180))));
+        RIGHT_CARGO_PIT(new Pose2d(new Translation2d(1.125, 8.2 - 6.25), new Rotation2d(Units.degreesToRadians(180)))),
+        RIGHT_HP_HATCH(new Pose2d(new Translation2d(0.9, 8.2 - 7.2), new Rotation2d(Units.degreesToRadians(180)))),
+        LEFT_CARGO_PIT(new Pose2d(new Translation2d(1.2, 8.2 - 2.05), new Rotation2d(Units.degreesToRadians(180)))),
+        LEFT_HP_HATCH(new Pose2d(new Translation2d(0.1, 8.2 - 0.65), new Rotation2d(Units.degreesToRadians(180))));
 
         public final Pose2d poseMeters;
 
@@ -60,13 +60,12 @@ public class SequenceOptions {
 
     public enum TertiaryDestination {
         DO_NOTHING(new Pose2d()),
-        LEFT_ROCKET_FAR(new Pose2d()),
-        LEFT_ROCKET_CLOSE(new Pose2d()),
-        RIGHT_ROCKET_FAR(new Pose2d()),
-        RIGHT_ROCKET_CLOSE(new Pose2d()),
-        CARGO_SIDE1(new Pose2d()),
-        CARGO_SIDE2(new Pose2d()),
-        CARGO_SIDE3(new Pose2d());
+        RIGHT_ROCKET_CLOSE(new Pose2d(4.8, .82, Rotation2d.fromDegrees(Path2019.LEFT_ROCKET_CLOSE_ANGLE))),
+        RIGHT_ROCKET_FAR(new Pose2d(6.8, .82, Rotation2d.fromDegrees(Path2019.LEFT_ROCKET_FAR_ANGLE))),
+        RIGHT_CARGO_SIDE1(new Pose2d(6.5, 2.4, Rotation2d.fromDegrees(90))),
+        RIGHT_CARGO_SIDE2(new Pose2d(7.1, 2.4, Rotation2d.fromDegrees(90))),
+        RIGHT_CARGO_SIDE3(new Pose2d(7.5, 2.4, Rotation2d.fromDegrees(90))),
+        LEFT_CARGO_SIDE2(PathHelper.mirrorPose2d(RIGHT_CARGO_SIDE2.poseMeters));
 
         public final Pose2d poseMeters;
 
@@ -84,7 +83,7 @@ public class SequenceOptions {
         DO_NOTHING
     }
 
-    public class PrimaryPath {
+    public static class PrimaryPath {
 
         public final PrimaryDestination endPos;
 
@@ -130,7 +129,8 @@ public class SequenceOptions {
         }
     }
 
-    public class SecondaryPath {
+    @SuppressWarnings("DuplicateBranchesInSwitch")
+    public static class SecondaryPath {
 
         public final SecondaryDestination endPos;
 
@@ -265,7 +265,8 @@ public class SequenceOptions {
         }
     }
 
-    public class TertiaryPath {
+    @SuppressWarnings("DuplicateBranchesInSwitch")
+    public static class TertiaryPath {
 
         public final TertiaryDestination endPos;
 
@@ -274,68 +275,60 @@ public class SequenceOptions {
         }
 
         Trajectory getPath(SecondaryDestination startPos) {
+            boolean isLeft = startPos == SecondaryDestination.LEFT_CARGO_PIT || startPos == SecondaryDestination.LEFT_HP_HATCH;
+
             switch (startPos) {
                 case LEFT_HP_HATCH:
                     switch (endPos) {
-                        case LEFT_ROCKET_CLOSE:
-                        case LEFT_ROCKET_FAR:
                         case RIGHT_ROCKET_CLOSE:
                         case RIGHT_ROCKET_FAR:
-                        case CARGO_SIDE1:
-                        case CARGO_SIDE2:
-                        case CARGO_SIDE3:
+                        case RIGHT_CARGO_SIDE1:
+                        case RIGHT_CARGO_SIDE2:
+                        case RIGHT_CARGO_SIDE3:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case LEFT_CARGO_PIT:
                     switch (endPos) {
-                        case LEFT_ROCKET_CLOSE:
-                        case LEFT_ROCKET_FAR:
                         case RIGHT_ROCKET_CLOSE:
                         case RIGHT_ROCKET_FAR:
-                        case CARGO_SIDE1:
-                        case CARGO_SIDE2:
-                        case CARGO_SIDE3:
+                        case RIGHT_CARGO_SIDE1:
+                        case RIGHT_CARGO_SIDE2:
+                        case RIGHT_CARGO_SIDE3:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case RIGHT_HP_HATCH:
                     switch (endPos) {
-                        case LEFT_ROCKET_CLOSE:
-                        case LEFT_ROCKET_FAR:
                         case RIGHT_ROCKET_CLOSE:
                         case RIGHT_ROCKET_FAR:
-                        case CARGO_SIDE1:
-                        case CARGO_SIDE2:
-                        case CARGO_SIDE3:
+                        case RIGHT_CARGO_SIDE1:
+                        case RIGHT_CARGO_SIDE2:
+                        case RIGHT_CARGO_SIDE3:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case RIGHT_CARGO_PIT:
                     switch (endPos) {
-                        case LEFT_ROCKET_CLOSE:
-                        case LEFT_ROCKET_FAR:
                         case RIGHT_ROCKET_CLOSE:
                         case RIGHT_ROCKET_FAR:
-                        case CARGO_SIDE1:
-                        case CARGO_SIDE2:
-                        case CARGO_SIDE3:
+                        case RIGHT_CARGO_SIDE1:
+                        case RIGHT_CARGO_SIDE2:
+                        case RIGHT_CARGO_SIDE3:
                         case DO_NOTHING:
                         default:
                             return null;
                     }
                 case DO_NOTHING:
                     switch (endPos) {
-                        case LEFT_ROCKET_CLOSE:
-                        case LEFT_ROCKET_FAR:
                         case RIGHT_ROCKET_CLOSE:
                         case RIGHT_ROCKET_FAR:
-                        case CARGO_SIDE1:
-                        case CARGO_SIDE2:
-                        case CARGO_SIDE3:
+                        case RIGHT_CARGO_SIDE1:
+                        case RIGHT_CARGO_SIDE2:
+                        case RIGHT_CARGO_SIDE3:
                         case DO_NOTHING:
                         default:
                             return null;

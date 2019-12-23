@@ -18,8 +18,8 @@ public class Constants {
 	public static class Poses {
 		public static final Pose2d kZeroZeroPose = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
 		public static final Pose2d kCenterHABStartPose = new Pose2d(1.7, 4.12, new Rotation2d());
-		public static final Pose2d kLeftHABStartPose = new Pose2d(1.7, 3.0, new Rotation2d());
-		public static final Pose2d kRightHABStartPose = PathHelper.mirrorPose2d(kLeftHABStartPose);
+		public static final Pose2d kRightHABStartPose = new Pose2d(1.7, 3.0, new Rotation2d());
+		public static final Pose2d kLeftHABStartPose = PathHelper.mirrorPose2d(kRightHABStartPose);
 	}
 
 	public static class Drivetrain {
@@ -49,13 +49,28 @@ public class Constants {
 
 		public static final SimpleMotorFeedforward kRightDriveFF = new SimpleMotorFeedforward(kRightDrive_kS, kRightDrive_kV, kRightDrive_kA);
 
-		public static final double kDriveLeft_kP = 0.06; // 0.995
-		public static final double kDriveRight_kP = 0.05; // 0.888
+		public static final double kDriveLeft_kP = 0; // 0.995
+		public static final double kDriveRight_kP = 0; // 0.888
 
 		public static final DifferentialDriveVoltageConstraint kAutoVoltageConstraint =
 				new DifferentialDriveVoltageConstraint(kDriveFF, kDriveKinematics, 10);
 
 		public static final TrajectoryConfig kTrajectoryConfig =
+				new TrajectoryConfig(3, 6)
+						.setKinematics(kDriveKinematics)
+						.addConstraint(kAutoVoltageConstraint);
+
+		public static final TrajectoryConfig kSlowTrajConfig =
+				new TrajectoryConfig(1, 1)
+						.setKinematics(kDriveKinematics)
+						.addConstraint(kAutoVoltageConstraint);
+
+		public static final TrajectoryConfig kMedTrajConfig =
+				new TrajectoryConfig(2, 2)
+						.setKinematics(kDriveKinematics)
+						.addConstraint(kAutoVoltageConstraint);
+
+		public static final TrajectoryConfig kFastTrajConfig =
 				new TrajectoryConfig(3, 6)
 						.setKinematics(kDriveKinematics)
 						.addConstraint(kAutoVoltageConstraint);

@@ -29,6 +29,7 @@ import frc.team832.robot.autonomous.SequenceOptions;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 import static frc.team832.robot.Robot.oi;
+import static frc.team832.robot.autonomous.SequenceOptions.*;
 
 @SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdatable {
@@ -58,8 +59,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
     private boolean initPassed = true;
 
-    private Pose2d startingPose = SequenceOptions.StartingPosition.kHAB1Center.poseMeters;
-//    private SendableChooser<StartingPosition> startPoseChooser;
+    private Pose2d startingPose = StartingPosition.kHAB1Center.poseMeters;
+    private SendableChooser<StartingPosition> startPoseChooser;
 
     public DrivetrainSubsystem() {
         leftMaster = new CANSparkMax(Constants.Drivetrain.kLeftMasterCANId, MotorType.kBrushless);
@@ -123,8 +124,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         dashboard_rightOutputVolts = DashboardManager.addTabItem(this, "Right Volts", 0.0, DashboardWidget.Graph);
         dashboard_leftWheelSpeedMPS = DashboardManager.addTabItem(this, "Left Wheel Speed", 0.0, DashboardWidget.Graph);
         dashboard_rightWheelSpeedMPS = DashboardManager.addTabItem(this, "Right Wheel Speed", 0.0, DashboardWidget.Graph);
-        // TODO: update for new auto selector enum
-//        startPoseChooser = DashboardManager.addTabChooser(this, "StartPos", StartingPosition.values(), StartingPosition.kZeroZero);
+        startPoseChooser = DashboardManager.addTabChooser(this, "StartPos", StartingPosition.values(), StartingPosition.kZeroZero);
     }
 
     @Override
@@ -216,8 +216,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
     }
 
     public void resetPoseFromChooser() {
-//        Pose2d startPose = startPoseChooser.getSelected().poseMeters;
-//        resetPose(startPose);
+        Pose2d startPose = startPoseChooser.getSelected().poseMeters;
+        resetPose(startPose);
     }
 
     public void resetPose(Pose2d pose) {
@@ -242,7 +242,14 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         boolean driveStraight = ((SticksDriverOI) oi.driverOI).leftStick.trigger.get() || ((SticksDriverOI) oi.driverOI).rightStick.trigger.get();
 
         if (driveStraight) {
-            double power = (OscarMath.signumPow(rightStick * stickDriveMultiplier, 2) + OscarMath.signumPow(leftStick * stickDriveMultiplier, 2)) / 2;
+            double power;
+            if (((SticksDriverOI) oi.driverOI).leftStick.trigger.get() && ((SticksDriverOI) oi.driverOI).rightStick.trigger.get()) {
+                power = (OscarMath.signumPow(rightStick * stickDriveMultiplier, 2) + OscarMath.signumPow(leftStick * stickDriveMultiplier, 2)) / 2;
+            } else if (((SticksDriverOI) oi.driverOI).rightStick.trigger.get()) {
+                power = OscarMath.signumPow(rightStick * stickDriveMultiplier, 2);
+            } else {
+                power = (OscarMath.signumPow(leftStick * stickDriveMultiplier, 2));
+            }
             if (isRotate) {
                 rightPower = power - OscarMath.signumPow(axes.getRotation() * stickRotateMultiplier, 2);
                 leftPower = power + OscarMath.signumPow(axes.getRotation() * stickRotateMultiplier, 2);

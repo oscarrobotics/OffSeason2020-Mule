@@ -13,8 +13,8 @@ import java.util.List;
 public class Path2019 {
 	public static final double LEFT_ROCKET_CLOSE_ANGLE =  27.5;
 	public static final double RIGHT_ROCKET_CLOSE_ANGLE = -LEFT_ROCKET_CLOSE_ANGLE;
-	public static final double LEFT_ROCKET_REAR_ANGLE = 180 - LEFT_ROCKET_CLOSE_ANGLE;
-	public static final double RIGHT_ROCKET_REAR_ANGLE = -LEFT_ROCKET_REAR_ANGLE;
+	public static final double LEFT_ROCKET_FAR_ANGLE = 180 - LEFT_ROCKET_CLOSE_ANGLE;
+	public static final double RIGHT_ROCKET_REAR_ANGLE = -LEFT_ROCKET_FAR_ANGLE;
 
 	public static final Pose2d CENTER_HAB_START_POSE = new Pose2d(1.7, 4.12, new Rotation2d(0));
 	public static final Pose2d LEFT_HAB_START_POSE = new Pose2d(1.7, 3.0, new Rotation2d(0));
