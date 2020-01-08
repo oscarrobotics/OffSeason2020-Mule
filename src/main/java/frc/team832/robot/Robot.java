@@ -11,10 +11,12 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team832.lib.OscarTimedRobot;
 import frc.team832.robot.subsystems.DrivetrainSubsystem;
+import frc.team832.robot.subsystems.ShooterSubsystem;
 
 public class Robot extends OscarTimedRobot {
 
   public static final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
+  public static final ShooterSubsystem shooter = new ShooterSubsystem();
   public static final OI oi = new OI();
 
   private static final Notifier drivetrainTelemetryNotifier = new Notifier(drivetrain::updateDashboardData);
@@ -26,6 +28,11 @@ public class Robot extends OscarTimedRobot {
       drivetrainTelemetryNotifier.startPeriodic(0.05);
     } else {
       System.err.println("INIT - DRIVETRAIN FAIL");
+    }
+    if (shooter.passedInit()) {
+      System.out.println("INIT - SHOOTER OK");
+    } else {
+      System.err.println("INIT - SHOOTER FAIL");
     }
   }
 

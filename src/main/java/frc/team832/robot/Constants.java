@@ -80,4 +80,21 @@ public class Constants {
 		public static final int kRightMasterCANId = 22;
 		public static final int kRightSlaveCANId = 23;
 	}
+
+	public static class Shooter {
+		public static final int kTopWheelCANId = 6;
+		public static final int kBottomWheelCANId = 7;
+
+		public static double SPIN_UP_kP = 0;
+		public static double SPIN_UP_kD = 0;
+		public static double SPIN_UP_kF = 0;
+
+		public static double SHOOTING_kP = 0;
+		public static double SHOOTING_kD = 0;
+		public static double SHOOTING_kF = 0;
+
+		public static double SPIN_DOWN_kP = 0;
+		public static double SPIN_DOWN_kD = 0;
+		public static double SPIN_DOWN_kF = 0;
+	}
 }
