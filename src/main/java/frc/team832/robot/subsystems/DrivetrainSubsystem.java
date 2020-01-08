@@ -24,8 +24,6 @@ import frc.team832.lib.motors.Motors;
 import frc.team832.lib.sensors.NavXMicro;
 import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
-import frc.team832.robot.Robot;
-import frc.team832.robot.autonomous.SequenceOptions;
 
 import static com.revrobotics.CANSparkMaxLowLevel.*;
 import static frc.team832.robot.Robot.oi;
@@ -307,5 +305,16 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
         leftMaster.set(latestLeftWheelVolts);
         rightMaster.set(latestRightWheelVolts);
+    }
+
+    public void visionDrive(double distance, double yaw) {
+        double moveSpeed = Constants.Drivetrain.visionMoveKp * distance;
+
+        if (yaw <= Math.PI) OscarMath.map(yaw, 0, Math.PI, 0, 180);
+        else OscarMath.map(yaw, Math.PI, 2*Math.PI, 0, -179);
+
+        double rotSpeed = Constants.Drivetrain.visionRotKp * yaw;
+
+        diffDrive.arcadeDrive(moveSpeed, rotSpeed, SmartDifferentialDrive.LoopMode.PERCENTAGE);
     }
 }

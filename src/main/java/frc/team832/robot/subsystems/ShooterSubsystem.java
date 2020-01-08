@@ -35,7 +35,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-
 		if(lastMode != mode){
 			if (mode == SHOOTER_MODE.SHOOTING){
 				pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);

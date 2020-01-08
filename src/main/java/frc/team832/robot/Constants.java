@@ -79,6 +79,9 @@ public class Constants {
 		public static final int kLeftSlaveCANId = 21;
 		public static final int kRightMasterCANId = 22;
 		public static final int kRightSlaveCANId = 23;
+
+		public static final double visionMoveKp = .25;
+		public static final double visionRotKp = .25/90;
 	}
 
 	public static class Shooter {
