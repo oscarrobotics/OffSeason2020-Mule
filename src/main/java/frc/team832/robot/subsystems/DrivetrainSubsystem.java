@@ -20,7 +20,7 @@ import frc.team832.lib.driverstation.dashboard.DashboardUpdatable;
 import frc.team832.lib.driverstation.dashboard.DashboardWidget;
 import frc.team832.lib.motorcontrol.NeutralMode;
 import frc.team832.lib.motorcontrol.vendor.CANSparkMax;
-import frc.team832.lib.motors.Motors;
+import frc.team832.lib.motors.Motor;
 import frc.team832.lib.sensors.NavXMicro;
 import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
@@ -90,7 +90,7 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         leftMaster.setInverted(true);
         leftSlave.setInverted(false);
 
-        diffDrive = new SmartDifferentialDrive(leftMaster, rightMaster, Motors.NEO.freeSpeed - 1000);
+        diffDrive = new SmartDifferentialDrive(leftMaster, rightMaster, (int) (Motor.kNEO.freeSpeed - 1000));
 
         navX = new NavXMicro(NavXMicro.NavXPort.I2C_onboard);
         navX.init();

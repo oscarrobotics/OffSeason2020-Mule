@@ -1,14 +1,20 @@
 package frc.team832.robot.subsystems;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.RunEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.team832.lib.driverstation.dashboard.DashboardManager;
+import frc.team832.lib.driverstation.dashboard.DashboardUpdatable;
 import frc.team832.lib.motorcontrol.NeutralMode;
 import frc.team832.lib.motorcontrol.vendor.CANTalon;
 import frc.team832.robot.Constants;
 
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatable {
 	private CANTalon topWheel, bottomWheel;
 	private boolean initSuccessful = false;
+
+	private NetworkTableEntry dashboard_wheelRPM;
 
 	PIDController pid = new PIDController(Constants.Shooter.SPIN_UP_kP,0,Constants.Shooter.SPIN_UP_kD);
 
@@ -30,6 +36,10 @@ public class ShooterSubsystem extends SubsystemBase {
 		topWheel.setNeutralMode(neutralMode);
 		bottomWheel.setNeutralMode(neutralMode);
 
+		dashboard_wheelRPM = DashboardManager.addTabItem(this, "Speeds/LeftFPS", 0.0);
+
+		setDefaultCommand(new RunEndCommand(this::spinUp, this::spinDown, this));
+
 		initSuccessful = true;
 	}
 
@@ -45,6 +55,10 @@ public class ShooterSubsystem extends SubsystemBase {
 			} else {
 				pid.setPID(0,0,0);
 			}
+		}
+
+		if (Math.abs(dashboard_wheelRPM.getDouble(0) - topWheel.getSensorVelocity()) > 1000) {
+			setRPM(dashboard_wheelRPM.getDouble(0));
 		}
 	}
 
@@ -65,6 +79,16 @@ public class ShooterSubsystem extends SubsystemBase {
 		}
 	}
 
+	@Override
+	public String getDashboardTabName () {
+		return "Shooter";
+	}
+
+	@Override
+	public void updateDashboardData () {
+		dashboard_wheelRPM.setDouble(topWheel.getSensorVelocity());
+	}
+
 	public enum SHOOTER_MODE {
 		SPINNING_UP,
 		SPINNING_DOWN,
@@ -72,6 +96,19 @@ public class ShooterSubsystem extends SubsystemBase {
 		IDLE
 	}
 
+	public void spinUp() {
+		setRPM(dashboard_wheelRPM.getDouble(0));
+		setShooterMode(SHOOTER_MODE.SPINNING_UP);
+	}
+
+	public void setRPM(double rpm) {
+		topWheel.setVelocity(rpm);
+	}
+
+	public void spinDown() {
+		setRPM(0);
+		setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
+	}
 
 	public void setCurrentLimit(int limit) {
 		topWheel.setPeakCurrentLimit(limit);
