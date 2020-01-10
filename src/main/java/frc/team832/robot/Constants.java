@@ -85,8 +85,8 @@ public class Constants {
 	}
 
 	public static class Shooter {
-		public static final int kTopWheelCANId = 6;
-		public static final int kBottomWheelCANId = 7;
+		public static final int kTopWheelCANId = 1;
+		public static final int kBottomWheelCANId = 2;
 
 		public static double SPIN_UP_kP = 0;
 		public static double SPIN_UP_kD = 0;

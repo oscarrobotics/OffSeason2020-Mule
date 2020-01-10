@@ -7,6 +7,7 @@
 
 package frc.team832.robot;
 
+import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.team832.lib.OscarTimedRobot;
@@ -18,8 +19,10 @@ public class Robot extends OscarTimedRobot {
   public static final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
   public static final ShooterSubsystem shooter = new ShooterSubsystem();
   public static final OI oi = new OI();
+  public static final PigeonIMU pigeon = new PigeonIMU(1);
 
   private static final Notifier drivetrainTelemetryNotifier = new Notifier(drivetrain::updateDashboardData);
+  private static final Notifier shooterTelemetryNotifier = new Notifier(shooter::updateDashboardData);
 
   @Override
   public void robotInit() {
@@ -31,6 +34,7 @@ public class Robot extends OscarTimedRobot {
     }
     if (shooter.passedInit()) {
       System.out.println("INIT - SHOOTER OK");
+      shooterTelemetryNotifier.startPeriodic(0.05);
     } else {
       System.err.println("INIT - SHOOTER FAIL");
     }

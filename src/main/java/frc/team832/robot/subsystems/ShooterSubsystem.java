@@ -7,27 +7,32 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.team832.lib.driverstation.dashboard.DashboardManager;
 import frc.team832.lib.driverstation.dashboard.DashboardUpdatable;
 import frc.team832.lib.motorcontrol.NeutralMode;
-import frc.team832.lib.motorcontrol.vendor.CANTalon;
+import frc.team832.lib.motorcontrol2.vendor.CANTalonSRX;
+import frc.team832.lib.util.OscarMath;
 import frc.team832.robot.Constants;
+import frc.team832.robot.OI;
 
 public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatable {
-	private CANTalon topWheel, bottomWheel;
+	private CANTalonSRX topWheel, bottomWheel;
 	private boolean initSuccessful = false;
 
-	private NetworkTableEntry dashboard_wheelRPM;
+	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts;
 
 	PIDController pid = new PIDController(Constants.Shooter.SPIN_UP_kP,0,Constants.Shooter.SPIN_UP_kD);
 
 	private SHOOTER_MODE mode = SHOOTER_MODE.IDLE, lastMode = SHOOTER_MODE.IDLE;
 
 	public ShooterSubsystem () {
-		topWheel = new CANTalon(Constants.Shooter.kTopWheelCANId);
-		bottomWheel = new CANTalon(Constants.Shooter.kBottomWheelCANId);
+		DashboardManager.addTab(this);
+		DashboardManager.getTab(this).add(this);
 
-		topWheel.resetSettings();
-		bottomWheel.resetSettings();
+		topWheel = new CANTalonSRX(Constants.Shooter.kTopWheelCANId);
+		bottomWheel = new CANTalonSRX(Constants.Shooter.kBottomWheelCANId);
 
-		topWheel.setInverted(false);
+		topWheel.wipeSettings();
+		bottomWheel.wipeSettings();
+
+		topWheel.setInverted(true);
 		bottomWheel.setInverted(true);
 
 		setCurrentLimit(40);
@@ -36,9 +41,12 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		topWheel.setNeutralMode(neutralMode);
 		bottomWheel.setNeutralMode(neutralMode);
 
-		dashboard_wheelRPM = DashboardManager.addTabItem(this, "Speeds/LeftFPS", 0.0);
+		bottomWheel.follow(topWheel);
 
-		setDefaultCommand(new RunEndCommand(this::spinUp, this::spinDown, this));
+		dashboard_wheelPow = DashboardManager.addTabItem(this, "Power", 0.0);
+		dashboard_wheelVolts = DashboardManager.addTabItem(this, "Volts", 0.0);
+
+		setDefaultCommand(new RunEndCommand(this::runShooter, this::stopShooter, this));
 
 		initSuccessful = true;
 	}
@@ -55,10 +63,6 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 			} else {
 				pid.setPID(0,0,0);
 			}
-		}
-
-		if (Math.abs(dashboard_wheelRPM.getDouble(0) - topWheel.getSensorVelocity()) > 1000) {
-			setRPM(dashboard_wheelRPM.getDouble(0));
 		}
 	}
 
@@ -85,8 +89,9 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	@Override
-	public void updateDashboardData () {
-		dashboard_wheelRPM.setDouble(topWheel.getSensorVelocity());
+	public void updateDashboardData() {
+		dashboard_wheelPow.setDouble(getShooterPower());
+		dashboard_wheelVolts.setDouble(getShooterPower() * 12);
 	}
 
 	public enum SHOOTER_MODE {
@@ -96,8 +101,24 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		IDLE
 	}
 
+	public void setShooterPower() {
+		topWheel.set(getShooterPower());
+	}
+
+	public double getShooterPower() {
+		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 0.9);
+	}
+
+	public void runShooter() {
+		setShooterPower();
+	}
+
+	public void stopShooter() {
+		topWheel.set(0);
+	}
+
 	public void spinUp() {
-		setRPM(dashboard_wheelRPM.getDouble(0));
+		setRPM(dashboard_wheelPow.getDouble(0));
 		setShooterMode(SHOOTER_MODE.SPINNING_UP);
 	}
 
@@ -111,8 +132,8 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	public void setCurrentLimit(int limit) {
-		topWheel.setPeakCurrentLimit(limit);
-		bottomWheel.setPeakCurrentLimit(limit);
+//		topWheel.setC(limit);
+//		bottomWheel.setPeakCurrentLimit(limit);
 	}
 
 	public boolean passedInit() {
