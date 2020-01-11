@@ -1,5 +1,6 @@
 package frc.team832.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.RunEndCommand;
@@ -32,8 +33,8 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		topWheel.wipeSettings();
 		bottomWheel.wipeSettings();
 
-		topWheel.setInverted(true);
-		bottomWheel.setInverted(true);
+		topWheel.setInverted(false);
+		bottomWheel.setInverted(false);
 
 		setCurrentLimit(40);
 
@@ -42,6 +43,8 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		bottomWheel.setNeutralMode(neutralMode);
 
 		bottomWheel.follow(topWheel);
+
+		topWheel.getBaseController().configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
 
 		dashboard_wheelPow = DashboardManager.addTabItem(this, "Power", 0.0);
 		dashboard_wheelVolts = DashboardManager.addTabItem(this, "Volts", 0.0);
@@ -115,7 +118,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
 			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
 			power += Constants.Shooter.SPIN_DOWN_kF;
-		} else {
+		} else if (targetRPM > 1000){
 			setShooterMode(SHOOTER_MODE.IDLE);
 			power += Constants.Shooter.IDLE_kF;
 		}
@@ -144,16 +147,16 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	public double getShooterTargetPower () {
-		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 0.9);
+		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 1);
 	}
 
 	public double getShooterTargetRPM () {
-		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 14000);
+		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 18000);
 	}
 
 	public void runShooter() {
-//		setShooterPower();
-		handleRPM();
+		setShooterPower();
+//		handleRPM();
 	}
 
 	public void stopShooter() {
