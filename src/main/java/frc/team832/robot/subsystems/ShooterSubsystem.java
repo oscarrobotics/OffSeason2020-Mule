@@ -16,7 +16,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	private CANTalonSRX topWheel, bottomWheel;
 	private boolean initSuccessful = false;
 
-	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts;
+	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_wheelRPM, dashboard_sliderRPM, dashboard_PID, dashboard_mode;
 
 	PIDController pid = new PIDController(Constants.Shooter.SPIN_UP_kP,0,Constants.Shooter.SPIN_UP_kD);
 
@@ -45,6 +45,10 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 		dashboard_wheelPow = DashboardManager.addTabItem(this, "Power", 0.0);
 		dashboard_wheelVolts = DashboardManager.addTabItem(this, "Volts", 0.0);
+		dashboard_wheelRPM = DashboardManager.addTabItem(this, "RPM", 0.0);
+		dashboard_sliderRPM = DashboardManager.addTabItem(this, "Slider", 0.0);
+		dashboard_PID = DashboardManager.addTabItem(this, "PID", 0.0);
+		dashboard_mode = DashboardManager.addTabItem(this, "PID Mode", "Idle");
 
 		setDefaultCommand(new RunEndCommand(this::runShooter, this::stopShooter, this));
 
@@ -53,17 +57,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	@Override
 	public void periodic() {
-		if(lastMode != mode){
-			if (mode == SHOOTER_MODE.SHOOTING){
-				pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
-			} else if (mode == SHOOTER_MODE.SPINNING_UP) {
-				pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
-			} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
-				pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
-			} else {
-				pid.setPID(0,0,0);
-			}
-		}
+		updatePIDMode();
 	}
 
 	public void setShooterMode (SHOOTER_MODE mode) {
@@ -71,27 +65,61 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		this.mode = mode;
 	}
 
+	@Override
+	public void updateDashboardData () {
+		dashboard_wheelRPM.setDouble(topWheel.getSensorVelocity());
+		dashboard_wheelPow.setDouble(getShooterTargetPower());
+		dashboard_wheelVolts.setDouble(getShooterTargetPower() * 12);
+		dashboard_sliderRPM.setDouble(getShooterTargetRPM());
+		dashboard_mode.setString(dashboardGetMode());
+		dashboard_PID.setDouble(getPIDPow(getShooterTargetRPM()));
+	}
+	
 	public SHOOTER_MODE getMode () {
 		return mode;
 	}
 
+	private String dashboardGetMode() {
+		switch (mode) {
+			case IDLE:
+				return "Idle";
+			case SHOOTING:
+				return "Shooting";
+			case SPINNING_UP:
+				return "Spin Up";
+			case SPINNING_DOWN:
+				return "Spin Down";
+
+		}
+		return null;
+	}
+
 	private void updatePIDMode () {
-		if (mode == SHOOTER_MODE.SHOOTING){
-			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
-		} else if (mode == SHOOTER_MODE.SPINNING_UP) {
+		if (mode == SHOOTER_MODE.SPINNING_UP){
 			pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
+		} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
+			pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
+		} else if (mode == SHOOTER_MODE.SHOOTING){
+			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
+		} else {
+			pid.setPID(Constants.Shooter.IDLE_kP, 0, Constants.Shooter.IDLE_kD);
 		}
 	}
 
-	@Override
-	public String getDashboardTabName () {
-		return "Shooter";
+	public void handleRPM () {
+		double targetRPM = getShooterTargetRPM();
+		if (targetRPM > topWheel.getSensorVelocity() + 5000) {
+			setShooterMode(SHOOTER_MODE.SPINNING_UP);
+		} else if (targetRPM < topWheel.getSensorVelocity() - 5000) {
+			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
+		} else {
+			setShooterMode(SHOOTER_MODE.IDLE);
+		}
+		//topWheel.set(getPIDPow(targetRPM));
 	}
 
-	@Override
-	public void updateDashboardData() {
-		dashboard_wheelPow.setDouble(getShooterPower());
-		dashboard_wheelVolts.setDouble(getShooterPower() * 12);
+	private double getPIDPow(double targetRPM) {
+		return pid.calculate(topWheel.getSensorVelocity(), targetRPM);
 	}
 
 	public enum SHOOTER_MODE {
@@ -101,39 +129,36 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		IDLE
 	}
 
+
+	@Override
+	public String getDashboardTabName () {
+		return "Shooter";
+	}
+	
 	public void setShooterPower() {
-		topWheel.set(getShooterPower());
+		topWheel.set(getShooterTargetPower());
 	}
 
-	public double getShooterPower() {
+	public double getShooterTargetPower () {
 		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 0.9);
 	}
 
+	public double getShooterTargetRPM () {
+		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 14000);
+	}
+
 	public void runShooter() {
-		setShooterPower();
+//		setShooterPower();
+		handleRPM();
 	}
 
 	public void stopShooter() {
 		topWheel.set(0);
 	}
 
-	public void spinUp() {
-		setRPM(dashboard_wheelPow.getDouble(0));
-		setShooterMode(SHOOTER_MODE.SPINNING_UP);
-	}
-
-	public void setRPM(double rpm) {
-		topWheel.setVelocity(rpm);
-	}
-
-	public void spinDown() {
-		setRPM(0);
-		setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
-	}
-
 	public void setCurrentLimit(int limit) {
-//		topWheel.setC(limit);
-//		bottomWheel.setPeakCurrentLimit(limit);
+		topWheel.limitInputCurrent(limit);
+		bottomWheel.limitInputCurrent(limit);
 	}
 
 	public boolean passedInit() {

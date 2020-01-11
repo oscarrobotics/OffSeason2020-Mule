@@ -19,16 +19,16 @@ public class OI {
     public final DriverOI driverOI;
     public static final StratComInterface stratComInterface = new StratComInterface(1);
 
-    public final Attack3 leftStick;
-    public final Extreme3DPro rightStick;
+//    public final Attack3 leftStick;
+//    public final Extreme3DPro rightStick;
 
     public OI() {
-//        driverOI = new XboxDriverOI();
-         driverOI = new SticksDriverOI();
+        driverOI = new XboxDriverOI();
+//         driverOI = new SticksDriverOI();
 
 
-        leftStick = ((SticksDriverOI)driverOI).leftStick;
-        rightStick = ((SticksDriverOI)driverOI).rightStick;
+//        leftStick = ((SticksDriverOI)driverOI).leftStick;
+//        rightStick = ((SticksDriverOI)driverOI).rightStick;
 
         // do commands here
 

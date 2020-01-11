@@ -88,16 +88,20 @@ public class Constants {
 		public static final int kTopWheelCANId = 1;
 		public static final int kBottomWheelCANId = 2;
 
-		public static double SPIN_UP_kP = 0;
-		public static double SPIN_UP_kD = 0;
+		public static double SPIN_UP_kP = Math.pow(1, -10);
+		public static double SPIN_UP_kD = Math.pow(1, -8);
 		public static double SPIN_UP_kF = 0;
 
-		public static double SHOOTING_kP = 0;
-		public static double SHOOTING_kD = 0;
+		public static double SHOOTING_kP = Math.pow(1, -10);
+		public static double SHOOTING_kD = Math.pow(1, -6);
 		public static double SHOOTING_kF = 0;
 
-		public static double SPIN_DOWN_kP = 0;
-		public static double SPIN_DOWN_kD = 0;
+		public static double SPIN_DOWN_kP = Math.pow(1, -10);
+		public static double SPIN_DOWN_kD = Math.pow(1, -9);
 		public static double SPIN_DOWN_kF = 0;
+
+		public static double IDLE_kP = Math.pow(1, -10);
+		public static double IDLE_kD = Math.pow(1, -7);
+		public static double IDLE_kF = 0;
 	}
 }
