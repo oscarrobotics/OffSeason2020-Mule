@@ -108,14 +108,18 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	public void handleRPM () {
 		double targetRPM = getShooterTargetRPM();
-		if (targetRPM > topWheel.getSensorVelocity() + 5000) {
+		double power = getPIDPow(targetRPM);
+		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
 			setShooterMode(SHOOTER_MODE.SPINNING_UP);
-		} else if (targetRPM < topWheel.getSensorVelocity() - 5000) {
+			power += Constants.Shooter.SPIN_UP_kF;
+		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
 			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
+			power += Constants.Shooter.SPIN_DOWN_kF;
 		} else {
 			setShooterMode(SHOOTER_MODE.IDLE);
+			power += Constants.Shooter.IDLE_kF;
 		}
-		//topWheel.set(getPIDPow(targetRPM));
+		topWheel.set(power);
 	}
 
 	private double getPIDPow(double targetRPM) {
