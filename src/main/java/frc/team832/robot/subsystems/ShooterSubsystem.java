@@ -120,7 +120,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 			power += Constants.Shooter.SPIN_DOWN_kF;
 		} else if (targetRPM > 1000){
 			setShooterMode(SHOOTER_MODE.IDLE);
-			power += Constants.Shooter.IDLE_kF;
+			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
 		}
 		topWheel.set(power);
 	}
@@ -155,8 +155,8 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	public void runShooter() {
-		setShooterPower();
-//		handleRPM();
+//		setShooterPower();
+		handleRPM();
 	}
 
 	public void stopShooter() {

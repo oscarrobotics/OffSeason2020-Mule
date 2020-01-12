@@ -90,20 +90,20 @@ public class Constants {
 
 		public static double kF = 12 / Motor.k775Pro.freeSpeed;
 
-		public static double SPIN_UP_kP = Math.pow(10, -4) * 5;
+		public static double SPIN_UP_kP = Math.pow(10, -4) * 7;
 		public static double SPIN_UP_kD = Math.pow(10, -6);
 		public static double SPIN_UP_kF = 0.07;
 
-		public static double SHOOTING_kP = Math.pow(10, -4);
+		public static double SHOOTING_kP = Math.pow(10, -4) * 4;
 		public static double SHOOTING_kD = Math.pow(10, -5);
-		public static double SHOOTING_kF = 0.1;
+		public static double SHOOTING_kF = 0.13;
 
-		public static double SPIN_DOWN_kP = Math.pow(10, -6);
+		public static double SPIN_DOWN_kP = Math.pow(10, -6) * 5;
 		public static double SPIN_DOWN_kD = Math.pow(10, -7);
 		public static double SPIN_DOWN_kF = 0;
 
-		public static double IDLE_kP = Math.pow(10, -4) * 1.25;
+		public static double IDLE_kP = Math.pow(10, -4) * 4;
 		public static double IDLE_kD = Math.pow(10, -5);
-		public static double IDLE_kF = 0.14;
+		public static double IDLE_kF = 0.15;
 	}
 }
