@@ -88,7 +88,10 @@ public class Constants {
 		public static final int kTopWheelCANId = 1;
 		public static final int kBottomWheelCANId = 2;
 
-		public static double kF = 12 / Motor.k775Pro.freeSpeed;
+		public static SimpleMotorFeedforward ff = new SimpleMotorFeedforward(0.72, 0.000687, 0.000319);
+
+		public static double SPIN_UP_ACCEL = 500 * 2 * Math.PI;
+		public static double SPIN_DOWN_ACCEL = 100 * 2 * Math.PI;
 
 		public static double SPIN_UP_kP = Math.pow(10, -4) * 7;
 		public static double SPIN_UP_kD = Math.pow(10, -6);

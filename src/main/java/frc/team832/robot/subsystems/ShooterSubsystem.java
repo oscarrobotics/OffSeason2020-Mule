@@ -17,7 +17,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	private CANTalonSRX topWheel, bottomWheel;
 	private boolean initSuccessful = false;
 
-	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_wheelRPM, dashboard_sliderRPM, dashboard_PID, dashboard_mode;
+	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_wheelRPM, dashboard_sliderRPM, dashboard_PID, dashboard_mode, dashboard_FF;
 
 	PIDController pid = new PIDController(Constants.Shooter.SPIN_UP_kP,0,Constants.Shooter.SPIN_UP_kD);
 
@@ -34,7 +34,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		bottomWheel.wipeSettings();
 
 		topWheel.setInverted(false);
-		bottomWheel.setInverted(false);
+		bottomWheel.setInverted(true);
 
 		setCurrentLimit(40);
 
@@ -52,6 +52,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		dashboard_sliderRPM = DashboardManager.addTabItem(this, "Slider", 0.0);
 		dashboard_PID = DashboardManager.addTabItem(this, "PID", 0.0);
 		dashboard_mode = DashboardManager.addTabItem(this, "PID Mode", "Idle");
+		dashboard_FF = DashboardManager.addTabItem(this, "FeedForward", 0.0);
 
 		setDefaultCommand(new RunEndCommand(this::runShooter, this::stopShooter, this));
 
@@ -111,17 +112,26 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	public void handleRPM () {
 		double targetRPM = getShooterTargetRPM();
-		double power = getPIDPow(targetRPM);
+//		double power = getPIDPow(targetRPM);
+//		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
+//			setShooterMode(SHOOTER_MODE.SPINNING_UP);
+//			power += Constants.Shooter.SPIN_UP_kF;
+//		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
+//			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
+//			power += Constants.Shooter.SPIN_DOWN_kF;
+//		} else if (targetRPM > 1000){
+//			setShooterMode(SHOOTER_MODE.IDLE);
+//			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
+//		}
+		double power = 0;
 		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
-			setShooterMode(SHOOTER_MODE.SPINNING_UP);
-			power += Constants.Shooter.SPIN_UP_kF;
+			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI, Constants.Shooter.SPIN_UP_ACCEL);
 		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
-			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
-			power += Constants.Shooter.SPIN_DOWN_kF;
+			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI, Constants.Shooter.SPIN_DOWN_ACCEL);
 		} else if (targetRPM > 1000){
-			setShooterMode(SHOOTER_MODE.IDLE);
-			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
+			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI);
 		}
+		dashboard_FF.setDouble(power);
 		topWheel.set(power);
 	}
 
