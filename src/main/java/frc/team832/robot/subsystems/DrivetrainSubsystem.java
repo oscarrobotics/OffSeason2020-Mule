@@ -57,8 +57,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
     private boolean initPassed = true;
 
-    private Pose2d startingPose = StartingPosition.kHAB1Center.poseMeters;
-    private SendableChooser<StartingPosition> startPoseChooser;
+        private Pose2d startingPose = StartingPosition.kHAB1Center.poseMeters;
+        private SendableChooser<StartingPosition> startPoseChooser;
 
     public DrivetrainSubsystem() {
         leftMaster = new CANSparkMax(Constants.Drivetrain.kLeftMasterCANId, MotorType.kBrushless);

@@ -17,7 +17,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	private CANTalonSRX topWheel, bottomWheel;
 	private boolean initSuccessful = false;
 
-	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_topWheelRPM, dashboard_bottomWheelRPM, dashboard_leftSliderRPM, dashboard_PID, dashboard_mode, dashboard_FF;
+	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_topWheelRPM, dashboard_bottomWheelRPM, dashboard_leftSliderRPM, dashboard_PID, dashboard_mode, dashboard_FF, dashboard_multiplier;
 
 	PIDController pid = new PIDController(Constants.Shooter.IDLE_kP,0,Constants.Shooter.IDLE_kD);
 
@@ -67,7 +67,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	@Override
 	public void periodic() {
-		updatePIDMode();
+//		updatePIDMode();
 	}
 
 	public void setShooterMode (SHOOTER_MODE mode) {
@@ -84,6 +84,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		dashboard_leftSliderRPM.setDouble(getTopTargetRPM());
 		dashboard_mode.setString(dashboardGetMode());
 		dashboard_PID.setDouble(getTopPIDPow(getTopTargetRPM()));
+		dashboard_multiplier.setDouble(getMultiplier());
 	}
 	
 	public SHOOTER_MODE getMode () {
@@ -106,15 +107,15 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	private void updatePIDMode () {
-//		if (mode == SHOOTER_MODE.SPINNING_UP){
-//			pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
-//		} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
-//			pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
-//		} else if (mode == SHOOTER_MODE.SHOOTING){
-//			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
-//		} else {
-//			pid.setPID(Constants.Shooter.IDLE_kP, 0, Constants.Shooter.IDLE_kD);
-//		}
+		if (mode == SHOOTER_MODE.SPINNING_UP){
+			pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
+		} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
+			pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
+		} else if (mode == SHOOTER_MODE.SHOOTING){
+			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
+		} else {
+			pid.setPID(Constants.Shooter.IDLE_kP, 0, Constants.Shooter.IDLE_kD);
+		}
 	}
 
 	public void handleTopRPM () {
@@ -198,7 +199,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	public double getBottomTargetRPM () { return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 0, 15000); }
 
-	private double getMultiplier() { return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 1, 3); }
+	private double getMultiplier() { return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 0.5, 3); }
 
 	public void runShooter() {
 //		setShooterPower();
