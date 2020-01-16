@@ -10,25 +10,27 @@ import frc.team832.lib.driverstation.dashboard.DashboardManager;
 import frc.team832.robot.autonomous.AutonomousSequencer;
 import frc.team832.robot.autonomous.SequenceOptions.*;
 import frc.team832.robot.autonomous.Trajectories;
-import frc.team832.robot.commands.FollowPathCommand;
+//import frc.team832.robot.commands.FollowPathCommand;
 
 
 @SuppressWarnings("WeakerAccess")
 public class OI {
 
     public final DriverOI driverOI;
-    public static final StratComInterface stratComInterface = new StratComInterface(1);
+    public static final boolean isSticks = true;
+    public static final StratComInterface stratComInterface = new StratComInterface(isSticks ? 2 : 1);
 
-//    public final Attack3 leftStick;
-//    public final Extreme3DPro rightStick;
+    public final Attack3 leftStick;
+    public final Extreme3DPro rightStick;
 
     public OI() {
-        driverOI = new XboxDriverOI();
-//         driverOI = new SticksDriverOI();
-
-
-//        leftStick = ((SticksDriverOI)driverOI).leftStick;
-//        rightStick = ((SticksDriverOI)driverOI).rightStick;
+        if (isSticks) {
+            driverOI = new SticksDriverOI();
+            leftStick = ((SticksDriverOI)driverOI).leftStick;
+            rightStick = ((SticksDriverOI)driverOI).rightStick;
+        } else {
+            driverOI = new XboxDriverOI();
+        }
 
         // do commands here
 

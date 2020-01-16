@@ -17,9 +17,9 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	private CANTalonSRX topWheel, bottomWheel;
 	private boolean initSuccessful = false;
 
-	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_wheelRPM, dashboard_sliderRPM, dashboard_PID, dashboard_mode, dashboard_FF;
+	private NetworkTableEntry dashboard_wheelPow, dashboard_wheelVolts, dashboard_topWheelRPM, dashboard_bottomWheelRPM, dashboard_leftSliderRPM, dashboard_PID, dashboard_mode, dashboard_FF;
 
-	PIDController pid = new PIDController(Constants.Shooter.SPIN_UP_kP,0,Constants.Shooter.SPIN_UP_kD);
+	PIDController pid = new PIDController(Constants.Shooter.IDLE_kP,0,Constants.Shooter.IDLE_kD);
 
 	private SHOOTER_MODE mode = SHOOTER_MODE.IDLE, lastMode = SHOOTER_MODE.IDLE;
 
@@ -33,23 +33,29 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		topWheel.wipeSettings();
 		bottomWheel.wipeSettings();
 
-		topWheel.setInverted(false);
-		bottomWheel.setInverted(true);
+		topWheel.setInverted(true);
+		bottomWheel.setInverted(false);
 
-		setCurrentLimit(40);
+		topWheel.setSensorPhase(true);
+		bottomWheel.setSensorPhase(true);
+
+
+		setCurrentLimit(20);
 
 		NeutralMode neutralMode = NeutralMode.kCoast;
 		topWheel.setNeutralMode(neutralMode);
 		bottomWheel.setNeutralMode(neutralMode);
 
-		bottomWheel.follow(topWheel);
+//		bottomWheel.follow(topWheel);
 
 		topWheel.getBaseController().configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+		bottomWheel.getBaseController().configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
 
 		dashboard_wheelPow = DashboardManager.addTabItem(this, "Power", 0.0);
 		dashboard_wheelVolts = DashboardManager.addTabItem(this, "Volts", 0.0);
-		dashboard_wheelRPM = DashboardManager.addTabItem(this, "RPM", 0.0);
-		dashboard_sliderRPM = DashboardManager.addTabItem(this, "Slider", 0.0);
+		dashboard_topWheelRPM = DashboardManager.addTabItem(this, "Top RPM", 0.0);
+		dashboard_bottomWheelRPM = DashboardManager.addTabItem(this, "Bottom RPM", 0.0);
+		dashboard_leftSliderRPM = DashboardManager.addTabItem(this, "Slider", 0.0);
 		dashboard_PID = DashboardManager.addTabItem(this, "PID", 0.0);
 		dashboard_mode = DashboardManager.addTabItem(this, "PID Mode", "Idle");
 		dashboard_FF = DashboardManager.addTabItem(this, "FeedForward", 0.0);
@@ -71,12 +77,13 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 
 	@Override
 	public void updateDashboardData () {
-		dashboard_wheelRPM.setDouble(topWheel.getSensorVelocity());
-		dashboard_wheelPow.setDouble(getShooterTargetPower());
-		dashboard_wheelVolts.setDouble(getShooterTargetPower() * 12);
-		dashboard_sliderRPM.setDouble(getShooterTargetRPM());
+		dashboard_topWheelRPM.setDouble(topWheel.getSensorVelocity());
+		dashboard_bottomWheelRPM.setDouble(bottomWheel.getSensorVelocity());
+		dashboard_wheelPow.setDouble(getTopTargetPower());
+		dashboard_wheelVolts.setDouble(getTopTargetPower() * 12);
+		dashboard_leftSliderRPM.setDouble(getTopTargetRPM());
 		dashboard_mode.setString(dashboardGetMode());
-		dashboard_PID.setDouble(getPIDPow(getShooterTargetRPM()));
+		dashboard_PID.setDouble(getTopPIDPow(getTopTargetRPM()));
 	}
 	
 	public SHOOTER_MODE getMode () {
@@ -99,44 +106,64 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 
 	private void updatePIDMode () {
-		if (mode == SHOOTER_MODE.SPINNING_UP){
-			pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
-		} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
-			pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
-		} else if (mode == SHOOTER_MODE.SHOOTING){
-			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
-		} else {
-			pid.setPID(Constants.Shooter.IDLE_kP, 0, Constants.Shooter.IDLE_kD);
-		}
+//		if (mode == SHOOTER_MODE.SPINNING_UP){
+//			pid.setPID(Constants.Shooter.SPIN_UP_kP, 0, Constants.Shooter.SPIN_UP_kD);
+//		} else if (mode == SHOOTER_MODE.SPINNING_DOWN) {
+//			pid.setPID(Constants.Shooter.SPIN_DOWN_kP, 0, Constants.Shooter.SPIN_DOWN_kD);
+//		} else if (mode == SHOOTER_MODE.SHOOTING){
+//			pid.setPID(Constants.Shooter.SHOOTING_kP, 0, Constants.Shooter.SHOOTING_kD);
+//		} else {
+//			pid.setPID(Constants.Shooter.IDLE_kP, 0, Constants.Shooter.IDLE_kD);
+//		}
 	}
 
-	public void handleRPM () {
-		double targetRPM = getShooterTargetRPM();
-//		double power = getPIDPow(targetRPM);
-//		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
-//			setShooterMode(SHOOTER_MODE.SPINNING_UP);
-//			power += Constants.Shooter.SPIN_UP_kF;
-//		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
-//			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
-//			power += Constants.Shooter.SPIN_DOWN_kF;
-//		} else if (targetRPM > 1000){
-//			setShooterMode(SHOOTER_MODE.IDLE);
-//			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
-//		}
-		double power = 0;
+	public void handleTopRPM () {
+		double targetRPM = getTopTargetRPM();
+		double power = getTopPIDPow(targetRPM);
 		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
-			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI, Constants.Shooter.SPIN_UP_ACCEL);
+			setShooterMode(SHOOTER_MODE.SPINNING_UP);
+			power += Constants.Shooter.SPIN_UP_kF;
 		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
-			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI, Constants.Shooter.SPIN_DOWN_ACCEL);
+			setShooterMode(SHOOTER_MODE.SPINNING_DOWN);
+			power += Constants.Shooter.SPIN_DOWN_kF;
 		} else if (targetRPM > 1000){
-			power = Constants.Shooter.ff.calculate(getShooterTargetRPM() * 2 * Math.PI);
+			setShooterMode(SHOOTER_MODE.IDLE);
+			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
 		}
-		dashboard_FF.setDouble(power);
+//		double power = 0;
+//		if (targetRPM > topWheel.getSensorVelocity() + 1000) {
+//			power = Constants.Shooter.ff.calculate(getShooterTargetRPM());//, Constants.Shooter.SPIN_UP_ACCEL);
+//		} else if (targetRPM < topWheel.getSensorVelocity() - 1000) {
+//			power = Constants.Shooter.ff.calculate(getShooterTargetRPM());//, Constants.Shooter.SPIN_DOWN_ACCEL);
+//		} else if (targetRPM > 1000){
+//			power = Constants.Shooter.ff.calculate(getShooterTargetRPM());
+//		}
+//		dashboard_FF.setDouble(power);
+		dashboard_PID.setDouble(power);
 		topWheel.set(power);
 	}
 
-	private double getPIDPow(double targetRPM) {
+	public void handleRPM() {
+		handleTopRPM();
+		handleBottomRPM(getMultiplier());
+	}
+
+	public void handleBottomRPM(double multiplier) {
+		double targetRPM = getTopTargetRPM() * multiplier;
+		double power = getBottomPIDPow(targetRPM);
+		if (targetRPM > 1000) {
+			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
+		}
+
+		bottomWheel.set(power);
+	}
+
+	private double getTopPIDPow (double targetRPM) {
 		return pid.calculate(topWheel.getSensorVelocity(), targetRPM);
+	}
+
+	private double getBottomPIDPow (double targetRPM) {
+		return pid.calculate(bottomWheel.getSensorVelocity(), targetRPM);
 	}
 
 	public enum SHOOTER_MODE {
@@ -153,16 +180,25 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 	}
 	
 	public void setShooterPower() {
-		topWheel.set(getShooterTargetPower());
+		topWheel.set(getTopTargetPower());
+		bottomWheel.set(getBottomTargetPower());
 	}
 
-	public double getShooterTargetPower () {
+	public double getTopTargetPower () {
 		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 1);
 	}
 
-	public double getShooterTargetRPM () {
-		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 18000);
+	public double getTopTargetRPM () {
+		return OscarMath.map(OI.stratComInterface.getLeftSlider(), -1, 1, 0, 15000);
 	}
+
+	public double getBottomTargetPower () {
+		return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 0, 1);
+	}
+
+	public double getBottomTargetRPM () { return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 0, 15000); }
+
+	private double getMultiplier() { return OscarMath.map(OI.stratComInterface.getRightSlider(), -1, 1, 1, 3); }
 
 	public void runShooter() {
 //		setShooterPower();

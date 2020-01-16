@@ -13,7 +13,7 @@ import frc.team832.robot.Robot;
 import frc.team832.robot.autonomous.SequenceOptions.*;
 import frc.team832.robot.commands.examples.EjectCargo;
 import frc.team832.robot.commands.examples.EjectHatch;
-import frc.team832.robot.commands.FollowPathCommand;
+//import frc.team832.robot.commands.FollowPathCommand;
 import frc.team832.robot.commands.examples.ObtainCargo;
 import frc.team832.robot.commands.examples.ObtainHatch;
 
@@ -47,66 +47,66 @@ public class AutonomousSequencer {
 
     private static final Command doNothingCommand = new PrintCommand("DoNothing");
 
-    public SequentialCommandGroup composeCommandGroup() {
-        Command primaryCommand;
-        Command secondaryCommand;
-        Command tertiaryCommand;
-
-        switch (primaryTask) {
-            case EJECT_HATCH:
-                primaryCommand = new EjectHatch();
-                break;
-            case EJECT_CARGO:
-                primaryCommand = new EjectCargo();
-                break;
-            default:
-                primaryCommand = doNothingCommand;
-        }
-
-        switch (secondaryTask) {
-            case OBTAIN_HATCH:
-                secondaryCommand = new ObtainHatch();
-                break;
-            case OBTAIN_CARGO:
-                secondaryCommand = new ObtainCargo();
-                break;
-            default:
-                secondaryCommand = doNothingCommand;
-        }
-
-        switch (tertiaryTask) {
-            case EJECT_HATCH:
-                tertiaryCommand = new EjectHatch();
-                break;
-            case EJECT_CARGO:
-                tertiaryCommand = new EjectCargo();
-                break;
-            default:
-                tertiaryCommand = doNothingCommand;
-        }
-
-        if (!preGenerated) {
-
-            var priTraj = TrajectoryGenerator.generateTrajectory(List.of(startPosition.poseMeters, primaryPath.endPos.poseMeters), Constants.Drivetrain.kMedTrajConfig);
-            var secTraj = TrajectoryGenerator.generateTrajectory(Robot.drivetrain.pose, List.of(new Translation2d(3.5, 8.2 - 6)), secondaryPath.endPos.poseMeters, Constants.Drivetrain.kMedTrajConfig);
-            var terTraj = TrajectoryGenerator.generateTrajectory( List.of(Robot.drivetrain.pose, new Pose2d(5.1, 1.8, Rotation2d.fromDegrees(200)),tertiaryPath.endPos.poseMeters), Constants.Drivetrain.kSlowTrajConfig);
-
-            System.out.println(priTraj.toString());
-
-            return new SequentialCommandGroup(
-                    new FollowPathCommand(priTraj), primaryCommand, new FollowPathCommand(secTraj), secondaryCommand, new FollowPathCommand(terTraj), tertiaryCommand);
-//                    new FollowPathCommand(TrajectoryGenerator.generateTrajectory(primaryPath.endPos.poseMeters, List.of(), secondaryPath.endPos.poseMeters, Constants.Drivetrain.kTrajectoryConfig)),
+//    public SequentialCommandGroup composeCommandGroup() {
+//        Command primaryCommand;
+//        Command secondaryCommand;
+//        Command tertiaryCommand;
+//
+//        switch (primaryTask) {
+//            case EJECT_HATCH:
+//                primaryCommand = new EjectHatch();
+//                break;
+//            case EJECT_CARGO:
+//                primaryCommand = new EjectCargo();
+//                break;
+//            default:
+//                primaryCommand = doNothingCommand;
+//        }
+//
+//        switch (secondaryTask) {
+//            case OBTAIN_HATCH:
+//                secondaryCommand = new ObtainHatch();
+//                break;
+//            case OBTAIN_CARGO:
+//                secondaryCommand = new ObtainCargo();
+//                break;
+//            default:
+//                secondaryCommand = doNothingCommand;
+//        }
+//
+//        switch (tertiaryTask) {
+//            case EJECT_HATCH:
+//                tertiaryCommand = new EjectHatch();
+//                break;
+//            case EJECT_CARGO:
+//                tertiaryCommand = new EjectCargo();
+//                break;
+//            default:
+//                tertiaryCommand = doNothingCommand;
+//        }
+//
+//        if (!preGenerated) {
+//
+//            var priTraj = TrajectoryGenerator.generateTrajectory(List.of(startPosition.poseMeters, primaryPath.endPos.poseMeters), Constants.Drivetrain.kMedTrajConfig);
+//            var secTraj = TrajectoryGenerator.generateTrajectory(Robot.drivetrain.pose, List.of(new Translation2d(3.5, 8.2 - 6)), secondaryPath.endPos.poseMeters, Constants.Drivetrain.kMedTrajConfig);
+//            var terTraj = TrajectoryGenerator.generateTrajectory( List.of(Robot.drivetrain.pose, new Pose2d(5.1, 1.8, Rotation2d.fromDegrees(200)),tertiaryPath.endPos.poseMeters), Constants.Drivetrain.kSlowTrajConfig);
+//
+//            System.out.println(priTraj.toString());
+//
+//            return new SequentialCommandGroup(
+//                    new FollowPathCommand(priTraj), primaryCommand, new FollowPathCommand(secTraj), secondaryCommand, new FollowPathCommand(terTraj), tertiaryCommand);
+////                    new FollowPathCommand(TrajectoryGenerator.generateTrajectory(primaryPath.endPos.poseMeters, List.of(), secondaryPath.endPos.poseMeters, Constants.Drivetrain.kTrajectoryConfig)),
+////                    secondaryCommand,
+////                    new FollowPathCommand(TrajectoryGenerator.generateTrajectory(secondaryPath.endPos.poseMeters, List.of(), tertiaryPath.endPos.poseMeters, Constants.Drivetrain.kTrajectoryConfig)),
+////                    tertiaryCommand);
+//        } else {
+//            return new SequentialCommandGroup(
+//                    new FollowPathCommand(primaryPath.getPath(startPosition)),
+//                    primaryCommand,
+//                    new FollowPathCommand(secondaryPath.getPath(primaryPath.endPos)),
 //                    secondaryCommand,
-//                    new FollowPathCommand(TrajectoryGenerator.generateTrajectory(secondaryPath.endPos.poseMeters, List.of(), tertiaryPath.endPos.poseMeters, Constants.Drivetrain.kTrajectoryConfig)),
+//                    new FollowPathCommand(tertiaryPath.getPath(secondaryPath.endPos)),
 //                    tertiaryCommand);
-        } else {
-            return new SequentialCommandGroup(
-                    new FollowPathCommand(primaryPath.getPath(startPosition)),
-                    primaryCommand,
-                    new FollowPathCommand(secondaryPath.getPath(primaryPath.endPos)),
-                    secondaryCommand,
-                    new FollowPathCommand(tertiaryPath.getPath(secondaryPath.endPos)),
-                    tertiaryCommand);
-        }
-    }
+//        }
+//    }
 }
