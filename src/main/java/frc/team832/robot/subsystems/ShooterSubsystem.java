@@ -59,6 +59,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		dashboard_PID = DashboardManager.addTabItem(this, "PID", 0.0);
 		dashboard_mode = DashboardManager.addTabItem(this, "PID Mode", "Idle");
 		dashboard_FF = DashboardManager.addTabItem(this, "FeedForward", 0.0);
+		dashboard_multiplier = DashboardManager.addTabItem(this, "Multiplier", 0.0);
 
 		setDefaultCommand(new RunEndCommand(this::runShooter, this::stopShooter, this));
 
@@ -141,7 +142,7 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 //		}
 //		dashboard_FF.setDouble(power);
 		dashboard_PID.setDouble(power);
-		topWheel.set(power);
+		topWheel.set(OscarMath.clip(power, -0.5, 0.7));
 	}
 
 	public void handleRPM() {
@@ -153,10 +154,10 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		double targetRPM = getTopTargetRPM() * multiplier;
 		double power = getBottomPIDPow(targetRPM);
 		if (targetRPM > 1000) {
-			power += Constants.Shooter.IDLE_kF * (targetRPM / 3000.0);
+			power += Constants.Shooter.IDLE_kF * (targetRPM / 2000.0);
 		}
 
-		bottomWheel.set(power);
+		bottomWheel.set(OscarMath.clip(power, -0.5, 0.7));
 	}
 
 	private double getTopPIDPow (double targetRPM) {
@@ -206,14 +207,14 @@ public class ShooterSubsystem extends SubsystemBase implements DashboardUpdatabl
 		handleRPM();
 	}
 
-	public void stopShooter() {
-		topWheel.set(0);
-	}
+		public void stopShooter() {
+			topWheel.set(0);
+		}
 
-	public void setCurrentLimit(int limit) {
-		topWheel.limitInputCurrent(limit);
-		bottomWheel.limitInputCurrent(limit);
-	}
+		public void setCurrentLimit(int limit) {
+			topWheel.limitInputCurrent(limit);
+			bottomWheel.limitInputCurrent(limit);
+		}
 
 	public boolean passedInit() {
 		return initSuccessful;
