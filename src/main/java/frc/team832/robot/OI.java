@@ -30,17 +30,11 @@ public class OI {
         // do commands here
         InstantCommand resetPoseFromChooser = new InstantCommand(Robot.drivetrain::resetPoseFromChooser, Robot.drivetrain);
         DashboardManager.getTab(Robot.drivetrain).add("ResetPoseFromChooser", resetPoseFromChooser);
-        leftStick.eleven.whenPressed(resetPoseFromChooser);
-        leftStick.two.whenPressed(Robot.drivetrain::resetPose, Robot.drivetrain);
-        leftStick.three.whenPressed(new FollowPathCommand(Trajectories.test));
-        leftStick.eight.whenPressed(new FollowPathCommand(Trajectories.example));
 
-        CommandGroupBase testAuto = new AutonomousSequencer(StartingPosition.kHAB1Right,
-                new PrimaryPath(PrimaryDestination.CARGO_FRONT_RIGHT), AutoTask.EJECT_HATCH,
-                new SecondaryPath(SecondaryDestination.RIGHT_HP_HATCH), AutoTask.OBTAIN_HATCH,
-                new TertiaryPath(TertiaryDestination.RIGHT_CARGO_SIDE2), AutoTask.DO_NOTHING, false)
-                .composeCommandGroup();
-
-        leftStick.six.whenPressed(testAuto);
+//        CommandGroupBase testAuto = new AutonomousSequencer(StartingPosition.kHAB1Right,
+//                new PrimaryPath(PrimaryDestination.CARGO_FRONT_RIGHT), AutoTask.EJECT_HATCH,
+//                new SecondaryPath(SecondaryDestination.RIGHT_HP_HATCH), AutoTask.OBTAIN_HATCH,
+//                new TertiaryPath(TertiaryDestination.RIGHT_CARGO_SIDE2), AutoTask.DO_NOTHING, false)
+//                .composeCommandGroup();
     }
 }
