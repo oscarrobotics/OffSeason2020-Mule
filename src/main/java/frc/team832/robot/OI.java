@@ -28,6 +28,13 @@ public class OI {
         rightStick = ((SticksDriverOI)driverOI).rightStick;
 
         // do commands here
+        InstantCommand resetPoseFromChooser = new InstantCommand(Robot.drivetrain::resetPoseFromChooser, Robot.drivetrain);
+        DashboardManager.getTab(Robot.drivetrain).add("ResetPoseFromChooser", resetPoseFromChooser);
 
+//        CommandGroupBase testAuto = new AutonomousSequencer(StartingPosition.kHAB1Right,
+//                new PrimaryPath(PrimaryDestination.CARGO_FRONT_RIGHT), AutoTask.EJECT_HATCH,
+//                new SecondaryPath(SecondaryDestination.RIGHT_HP_HATCH), AutoTask.OBTAIN_HATCH,
+//                new TertiaryPath(TertiaryDestination.RIGHT_CARGO_SIDE2), AutoTask.DO_NOTHING, false)
+//                .composeCommandGroup();
     }
 }
