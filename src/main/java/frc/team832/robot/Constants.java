@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.util.Units;
 import frc.team832.lib.motion.PathHelper;
-import frc.team832.lib.motors.DTPowerTrain;
+import frc.team832.lib.motors.WheeledPowerTrain;
 import frc.team832.lib.motors.Gearbox;
 import frc.team832.lib.motors.Motor;
 
@@ -33,7 +33,7 @@ public class Constants {
 		public static final float kDriveGearReduction = 1f / (9f/84f);
 
 		private static final Gearbox driveGearbox = new Gearbox(kDriveGearReduction);
-		public static final DTPowerTrain dtPowertrain = new DTPowerTrain(driveGearbox, Motor.kNEO, 2, kDriveWheelDiameter);
+		public static final WheeledPowerTrain dtPowertrain = new WheeledPowerTrain(driveGearbox, Motor.kNEO, 2, kDriveWheelDiameter);
 		public static DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(Units.inchesToMeters(24.0));
 
 		private static final double kDrive_kS = 0.237;
