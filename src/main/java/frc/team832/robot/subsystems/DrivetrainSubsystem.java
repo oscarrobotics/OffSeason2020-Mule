@@ -238,8 +238,8 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
         double rightPower = 0;
         double leftPower = 0;
         DriveAxesSupplier axes = oi.driverOI.getArcadeDriveAxes();
-        rightPower = OscarMath.signumPow(-axes.getRight() * Constants.Drivetrain.XBoxDriveMultiplier, 3);
-        leftPower = OscarMath.signumPow(axes.getLeft() * Constants.Drivetrain.XBoxDriveMultiplier, 3);
+        rightPower = OscarMath.signumPow(-axes.getRightX() * Constants.Drivetrain.XBoxDriveMultiplier, 3);
+        leftPower = OscarMath.signumPow(axes.getLeftY() * Constants.Drivetrain.XBoxDriveMultiplier, 3);
         diffDrive.arcadeDrive(rightPower, leftPower, SmartDiffDrive.LoopMode.PERCENTAGE);
     }
 
@@ -281,6 +281,6 @@ public class DrivetrainSubsystem extends SubsystemBase implements DashboardUpdat
 
         double rotSpeed = Constants.Drivetrain.visionRotKp * yaw;
 
-        diffDrive.arcadeDrive(moveSpeed, rotSpeed, SmartDifferentialDrive.LoopMode.PERCENTAGE);
+        diffDrive.arcadeDrive(moveSpeed, rotSpeed, SmartDiffDrive.LoopMode.PERCENTAGE);
     }
 }
