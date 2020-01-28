@@ -25,7 +25,7 @@ public class Constants {
 	public static class Drivetrain {
 		public static final double StickDriveMultiplier = 1.0;
 		public static final double StickRotateOnCenterMultiplier = 0.55;
-		public static final double StickRotateMultiplier = 0.35;
+		public static final double StickRotateMultiplier = 0.45;
 		public static final double XBoxDriveMultiplier = 1.0;
 
 		public static final double kDriveWheelDiameter = Units.inchesToMeters(6);

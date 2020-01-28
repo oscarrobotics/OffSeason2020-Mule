@@ -12,6 +12,7 @@ public class TankDriveProfile {
 	public double leftPow;
 	public double rightPow;
 	public SmartDiffDrive.LoopMode loopMode;
+	private double adjustedTurnMultiplier;
 
 	public TankDriveProfile(double leftPow, double rightPow, SmartDiffDrive.LoopMode mode) {
 		this.leftPow = leftPow;
@@ -87,8 +88,12 @@ public class TankDriveProfile {
 		double leftPower = 0;
 		DriveAxesSupplier axes = oi.driverOI.getGreenbergDriveAxes();
 
-		rightPower = OscarMath.signumPow(axes.getRightX() * Constants.Drivetrain.StickRotateMultiplier, 1.5);
-		leftPower = OscarMath.signumPow(axes.getRightX() * Constants.Drivetrain.StickRotateMultiplier, 1.5);
+		double power = OscarMath.signumPow(axes.getRightX() * Constants.Drivetrain.StickRotateMultiplier, 2);
+
+		adjustedTurnMultiplier = OscarMath.map(Math.abs(power), 0.0, 1.0, Constants.Drivetrain.StickRotateMultiplier, Constants.Drivetrain.StickRotateMultiplier * 2);
+
+		rightPower = power * adjustedTurnMultiplier;
+		leftPower = -power * adjustedTurnMultiplier;
 
 		return new TankDriveProfile(leftPower, rightPower, SmartDiffDrive.LoopMode.PERCENTAGE);
 	}
